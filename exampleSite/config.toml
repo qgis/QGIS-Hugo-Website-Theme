@@ -25,12 +25,12 @@ staticDir = ['static']
 
 [params]
 # Brand colours:
-primary1 = "#a7cecb"
+primary1 = "#589632"
 primary2 = "#55828b"
 primary3 = "#395c6b"
 primary4 = "#285238"
 primary5 = "#589632"
-primary1-invert = "#444444"
+primary1-invert = "#fff"
 primary2-invert = "#eeeeee"
 primary3-invert = "#eeeeee"
 primary4-invert = "#eeeeee"
@@ -38,7 +38,7 @@ primary5-invert = "#eeeeee"
 # TODO update these to gradient colours like above
 complementary1 = "#589632"
 complementary2 = "#ee7913"
-complementary3 = "#f0e64a"
+complementary3 = "#EEE766"
 complementary4 = "#93b023"
 complementary5 = "#a7cecb"
 complementary6 = "#589732"
@@ -47,15 +47,17 @@ complementary8 = "#385C6B"
 light1 = "#fbfbfb"
 light2 = "#eeeeee"
 dark1 = "#999999"
-dark2 = "#444444"
+dark2 = "#000"
 # Bulma specific colours based on our branding
+black = "#000"
+white = "#fff"
 grey-dark = "#444444"
 grey-light = "#eeeeee"
 primary = "#a7cecb"
 danger = "#ee7913"
 info = "#93b023"
 success = "#589632"
-warning = "#f0e64a"
+warning = "#EEE766"
 link = "#ee7913"
 # Brand fonts to override bulma font families
 heading-font = "'Montserrat', sans-serif"
@@ -95,14 +97,14 @@ corner-radius = "0px"
 [menu]
 [[menu.main]]
   name = "About"
-  url = "/about/"
-  weight = -110
+  url = "/about1"
+  weight = 10
   #pre = "<i class='fa-solid fa-clipboard-question mr-1'></i>"
 
 [[menu.main]]
   name = "Community"
-  url = "/community/"
-  weight = -110 # Sets the menu order
+  url = "/community"
+  weight = 20 # Sets the menu order
   #pre = "<i class='fa-solid fa-people-group mr-1'></i>"
 
 [[menu.main]]
@@ -113,13 +115,13 @@ corner-radius = "0px"
 
 [[menu.main]]
   name = "Download"
-  url = "/download/download/"
+  url = "/download/download"
   #pre = "<i class='fa-solid fa-circle-down mr-1'></i>"
   weight = -110 # Sets the menu order
 
 [[menu.main]]
   name = "Value"
-  url = "/value-proposition/"
+  url = "/value-proposition"
   #pre = "<i class='fa fa-heart mr-1'></i>"
   weight = -110 # Sets the menu order
 

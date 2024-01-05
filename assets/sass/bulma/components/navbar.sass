@@ -1,15 +1,15 @@
 @import "../utilities/mixins"
 
 $navbar-background-color: $scheme-main !default
-$navbar-box-shadow-size: 0 2px 0 0 !default
-$navbar-box-shadow-color: $background !default
-$navbar-height: 3.25rem !default
+$navbar-box-shadow-size: 5px 5px 5px 0 !default
+$navbar-box-shadow-color: #00000020 !default
+$navbar-height: 4.75rem !default
 $navbar-padding-vertical: 1rem !default
 $navbar-padding-horizontal: 2rem !default
 $navbar-z: 30 !default
 $navbar-fixed-z: 30 !default
 
-$navbar-item-color: $text !default
+$navbar-item-color: $black !default
 $navbar-item-hover-color: $link !default
 $navbar-item-hover-background-color: $scheme-main-bis !default
 $navbar-item-active-color: $scheme-invert !default
@@ -26,7 +26,7 @@ $navbar-tab-active-border-bottom-color: $link !default
 $navbar-tab-active-border-bottom-style: solid !default
 $navbar-tab-active-border-bottom-width: 3px !default
 
-$navbar-dropdown-background-color: $scheme-main !default
+$navbar-dropdown-background-color: $white
 $navbar-dropdown-border-top: 2px solid $border !default
 $navbar-dropdown-offset: -4px !default
 $navbar-dropdown-arrow: $link !default
@@ -106,6 +106,7 @@ $navbar-colors: $colors !default
           color: $color-invert
         .navbar-dropdown
           a.navbar-item
+            font-weight: 400 !important
             &.is-active
               background-color: $color
               color: $color-invert
@@ -129,7 +130,7 @@ $navbar-colors: $colors !default
 html,
 body
   &.has-navbar-fixed-top
-    padding-top: $navbar-height
+    padding-top: calc(#{$navbar-height} + 40px)
   &.has-navbar-fixed-bottom
     padding-bottom: $navbar-height
 
@@ -166,7 +167,7 @@ body
   color: $navbar-item-color
   display: block
   line-height: 1.5
-  padding: 0.5rem 0.75rem
+  padding: 0.5rem 1.75rem
   position: relative
   .icon
     &:only-child
@@ -214,20 +215,26 @@ a.navbar-item,
   flex-shrink: 1
 
 .navbar-link:not(.is-arrowless)
-  +ltr-property("padding", 2.5em)
+  +ltr-property("padding", 3.5em)
   &::after
     @extend %arrow
+    content: url('../img/arrow.svg')
     border-color: $navbar-dropdown-arrow
-    margin-top: -0.375em
-    +ltr-position(1.125em)
+    margin-top: -0.6em
+    transform: rotate(0deg)
+    +ltr-position(2.125em)
+  &:hover
+    &::after
+      opacity: 0.5
 
 .navbar-dropdown
-  font-size: 0.875rem
+  font-size: 1rem
   padding-bottom: 0.5rem
   padding-top: 0.5rem
   .navbar-item
     padding-left: 1.5rem
     padding-right: 1.5rem
+    font-weight: 400 !important
 
 .navbar-divider
   background-color: $navbar-divider-background-color
@@ -328,7 +335,6 @@ a.navbar-item,
       align-items: stretch
     &.has-dropdown-up
       .navbar-link::after
-        transform: rotate(135deg) translate(0.25em, -0.25em)
       .navbar-dropdown
         border-bottom: $navbar-dropdown-border-top
         border-radius: $navbar-dropdown-radius $navbar-dropdown-radius 0 0
@@ -370,7 +376,7 @@ a.navbar-item,
     top: 100%
     z-index: $navbar-dropdown-z
     .navbar-item
-      padding: 0.375rem 1rem
+      padding: 0.75rem 2rem
       white-space: nowrap
     a.navbar-item
       +ltr-property("padding", 3rem)

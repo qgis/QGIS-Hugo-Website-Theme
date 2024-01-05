@@ -27,11 +27,40 @@
 // opening that url in the browser
 
 {{ $montserrat := resources.Get "webfonts/Montserrat.ttf" }}
+ 
 @font-face
     font-family: 'Montserrat'
     src: url('{{ $montserrat.RelPermalink }}') format('truetype')
 
+@font-face 
+  font-family: "Trueno"
+  src: url("/webfonts/TruenoLt.otf") format("opentype")
+  font-weight: 300
+
+@font-face 
+  font-family: "Trueno"
+  src: url("/webfonts/TruenoRg.otf") format("opentype")
+  font-weight: 400
+
+@font-face 
+  font-family: "Trueno"
+  src: url("/webfonts/TruenoSBd.otf") format("opentype")
+  font-weight: 500
+
+@font-face 
+  font-family: "Trueno"
+  src: url("/webfonts/TruenoBd.otf") format("opentype")
+  font-weight: 600 
+             
+@font-face 
+  font-family: "Trueno"
+  src: url("/webfonts/TruenoUltBlk.otf") format("opentype")
+  font-weight: 700
+  
+
 {{ $worksans := resources.Get "webfonts/worksans.woff2" }}
+
+
 @font-face
     font-family: 'Work Sans'
     src: url('{{ $worksans.RelPermalink }}') format('opentype')
@@ -122,6 +151,8 @@ $title-family: $heading-font
 $grey-dark: {{ .Param "grey-dark" }}
 $grey-darker: {{ .Param "grey-darker" }}
 $grey-light: {{ .Param "grey-light" }}
+$black: {{ .Param "black" }}
+$white: {{ .Param "white" }} 
 $primary: {{ .Param "primary" }}
 $danger: {{ .Param "danger" }}
 $info: {{ .Param "info" }}
@@ -148,18 +179,18 @@ $menu-item-color: $dark2
 $navbar-dropdown-arrow: $dark2
 $navbar-dropdown-arrow: none
 $navbar-item-hover-color: $dark2
-$navbar-background-color: $grey-light
+$navbar-background-color: $white
 $navbar-dropdown-background-color: $grey-light
 // Add more spacing between menu items
 .navbar-item,
 .navbar-link
-  padding: 0.5rem 2rem
+  padding: 2.5rem 2rem
 // The primary navbar needs to be over the secondary
 // so the dropdowns don't get obscured. TS.
 $navbar-fixed-z: 1000 !default
 
 // Allow navbar logo to be larger than navbar specified height
-$navbar-item-img-max-height: 57px;
+$navbar-item-img-max-height: 31px;
 
   
 /* We are going for a more boxy look on our site */

@@ -38,3 +38,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   
   });
+
+var prevScrollpos = window.scrollY;
+window.onscroll = function() {
+  var currentScrollPos = window.scrollY;
+  if (prevScrollpos > currentScrollPos) {
+    document.getElementById("context").style.top = "66px";
+  } else {
+    document.getElementById("context").style.top = "0px";
+  }
+  prevScrollpos = currentScrollPos;
+}

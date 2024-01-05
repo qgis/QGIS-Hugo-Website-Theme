@@ -12,3 +12,7 @@
   border-left-style: solid;
   border-left-color: white;
 }
+
+.text-nowrap {
+  white-space: nowrap;
+}
