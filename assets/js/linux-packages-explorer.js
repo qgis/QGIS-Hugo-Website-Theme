@@ -1,21 +1,18 @@
 /**
- * S3 File Explorer
- * Interactive file browser for S3 bucket contents with search
+ * Linux Packages Explorer
+ * Simplified file browser for Linux packages (Ubuntu/Debian)
+ * No search functionality for performance with large file lists
  */
 
 (function() {
     'use strict';
     
     // Cache DOM elements
-    const searchInput = document.getElementById('s3-search-input');
-    const resultsCount = document.getElementById('s3-results-count');
-    const resultsInfo = document.getElementById('s3-results-info');
-    const noResults = document.getElementById('s3-no-results');
-    const searchClear = document.getElementById('search-clear');
-    const resetButton = document.getElementById('reset-filters');
-    const resetButtonNoResults = document.getElementById('reset-filters-no-results');
-    const breadcrumbNav = document.getElementById('s3-breadcrumb');
-    const fileList = document.getElementById('s3-files-tbody');
+    const resultsCount = document.getElementById('linux-results-count');
+    const resultsInfo = document.getElementById('linux-results-info');
+    const noResults = document.getElementById('linux-no-results');
+    const breadcrumbNav = document.getElementById('linux-breadcrumb');
+    const fileList = document.getElementById('linux-files-tbody');
     
     // Store tree data
     let treeData = null;
@@ -23,35 +20,42 @@
     let currentPath = [];
     let currentNode = null;
     let currentSort = { field: 'name', order: 'asc' };
-    let isSearching = false;
-    
-    let searchTimeout = null;
     
     // Use core utilities
     const core = window.S3ExplorerCore;
     
     // Public initialization function
-    window.initS3Explorer = function(data) {
+    window.initLinuxPackagesExplorer = function(data) {
+        if (!data || !data.tree) {
+            console.error('Linux Packages Explorer: Invalid data provided', data);
+            return;
+        }
+        
         // Parse tree if it's a string
         if (typeof data.tree === 'string') {
             try {
                 treeData = JSON.parse(data.tree);
             } catch (e) {
-                console.error('S3 Explorer: Failed to parse tree data', e);
-                treeData = data.tree;
+                console.error('Linux Packages Explorer: Failed to parse tree data', e);
+                return;
             }
         } else {
             treeData = data.tree;
         }
         
-        totalFiles = data.totalFiles;
+        totalFiles = data.totalFiles || 0;
         currentNode = treeData;
-        init();
+        
+        try {
+            init();
+        } catch (e) {
+            console.error('Linux Packages Explorer: Initialization failed', e);
+        }
     };
     
     function init() {
-        if (!searchInput || !fileList) {
-            console.error('S3 Explorer: Required elements not found');
+        if (!fileList) {
+            console.error('Linux Packages Explorer: Required elements not found');
             return;
         }
         
@@ -63,36 +67,6 @@
     }
     
     function attachEventListeners() {
-        // Search with debounce - global tree search
-        searchInput.addEventListener('input', function() {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                const searchTerm = searchInput.value.trim().toLowerCase();
-                if (searchTerm) {
-                    isSearching = true;
-                    renderSearchResults(searchTerm);
-                } else {
-                    isSearching = false;
-                    renderCurrentDirectory();
-                }
-            }, 300);
-            
-            // Show/hide clear button
-            searchClear.style.display = this.value ? 'flex' : 'none';
-        });
-        
-        // Clear search
-        searchClear.addEventListener('click', function() {
-            searchInput.value = '';
-            searchClear.style.display = 'none';
-            isSearching = false;
-            renderCurrentDirectory();
-        });
-        
-        // Reset buttons
-        resetButton.addEventListener('click', resetFilters);
-        resetButtonNoResults.addEventListener('click', resetFilters);
-        
         // Column header sorting
         const sortableHeaders = document.querySelectorAll('th.sortable');
         sortableHeaders.forEach(header => {
@@ -109,13 +83,7 @@
                 }
                 
                 core.updateSortIcons(currentSort);
-                
-                // Re-render based on current mode
-                if (isSearching) {
-                    renderSearchResults(searchInput.value.trim().toLowerCase());
-                } else {
-                    renderCurrentDirectory();
-                }
+                renderCurrentDirectory();
             });
         });
         
@@ -144,22 +112,6 @@
             }
         });
         
-        // Keyboard shortcuts
-        document.addEventListener('keydown', function(e) {
-            // Ctrl/Cmd + K to focus search
-            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-                e.preventDefault();
-                searchInput.focus();
-            }
-            // Escape to clear search
-            if (e.key === 'Escape' && searchInput.value) {
-                searchInput.value = '';
-                searchClear.style.display = 'none';
-                isSearching = false;
-                renderCurrentDirectory();
-            }
-        });
-        
         // Browser back/forward button support
         window.addEventListener('popstate', function(e) {
             loadFromUrl();
@@ -170,7 +122,7 @@
         currentPath = pathArray;
         currentNode = treeData;
         
-        // Traverse the tree to find the current node (case-sensitive)
+        // Traverse the tree to find the current node
         for (let i = 0; i < pathArray.length; i++) {
             const folderName = pathArray[i];
             const found = currentNode.children.find(child => child.name === folderName && child.type === 'folder');
@@ -199,15 +151,13 @@
     }
     
     function loadFromUrl() {
-        const hash = window.location.hash.substring(1); // Remove '#'
+        const hash = window.location.hash.substring(1);
         
         if (!hash) {
-            // Root path
             navigateToPath([], false);
             return;
         }
         
-        // Split path and filter empty segments
         const pathArray = hash.split('/').filter(segment => segment.length > 0);
         navigateToPath(pathArray, false);
     }
@@ -282,58 +232,21 @@
         
         // Update count
         const totalItems = folders.length + files.length;
-        resultsCount.textContent = totalItems;
-        resultsInfo.textContent = `Showing ${totalItems} item${totalItems !== 1 ? 's' : ''}`;
+        if (resultsCount) {
+            resultsCount.textContent = totalItems;
+        }
+        if (resultsInfo) {
+            resultsInfo.textContent = `Showing ${totalItems} item${totalItems !== 1 ? 's' : ''}`;
+        }
         
         // Show/hide no results
         if (totalItems === 0) {
-            noResults.style.display = 'block';
-            resultsInfo.style.display = 'none';
+            if (noResults) noResults.style.display = 'block';
+            if (resultsInfo) resultsInfo.style.display = 'none';
         } else {
-            noResults.style.display = 'none';
-            resultsInfo.style.display = 'block';
+            if (noResults) noResults.style.display = 'none';
+            if (resultsInfo) resultsInfo.style.display = 'block';
         }
-    }
-    
-    // Search across entire tree
-    function renderSearchResults(searchTerm) {
-        const results = core.searchTree(treeData, searchTerm);
-        
-        // Sort results
-        const sortedResults = core.sortFiles(results, currentSort.field, currentSort.order);
-        
-        // Update results info
-        resultsInfo.textContent = `Found ${results.length} file${results.length !== 1 ? 's' : ''}`;
-        resultsCount.textContent = results.length;
-        
-        // Clear file list
-        fileList.innerHTML = '';
-        
-        if (results.length === 0) {
-            noResults.style.display = 'block';
-            resultsInfo.style.display = 'none';
-            return;
-        }
-        
-        noResults.style.display = 'none';
-        resultsInfo.style.display = 'block';
-        
-        // Render results
-        let html = '';
-        sortedResults.forEach(file => {
-            html += core.renderFileRow(file, true);
-        });
-        
-        fileList.innerHTML = html;
-    }
-    
-    function resetFilters() {
-        searchInput.value = '';
-        searchClear.style.display = 'none';
-        currentSort = { field: 'name', order: 'asc' };
-        isSearching = false;
-        core.updateSortIcons(currentSort);
-        renderCurrentDirectory();
     }
     
 })();
