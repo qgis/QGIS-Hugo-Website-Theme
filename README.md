@@ -6,19 +6,19 @@ By Tim Sutton
 
 ## Project Status
 
-[![E2E Tests](https://github.com/kartoza/hugo-bulma-blocks-theme/actions/workflows/e2e.yml/badge.svg)](https://github.com/kartoza/hugo-bulma-blocks-theme/actions/workflows/e2e.yml)
-[![Deploy Hugo site to Pages](https://github.com/kartoza/hugo-bulma-blocks-theme/actions/workflows/hugo.yml/badge.svg)](https://github.com/kartoza/hugo-bulma-blocks-theme/actions/workflows/hugo.yml)
+[![E2E Tests](https://github.com/qgis/QGIS-Hugo-Website-Theme/actions/workflows/e2e.yml/badge.svg)](https://github.com/qgis/QGIS-Hugo-Website-Theme/actions/workflows/e2e.yml)
+[![Deploy Hugo site to Pages](https://github.com/qgis/QGIS-Hugo-Website-Theme/actions/workflows/hugo.yml/badge.svg)](https://github.com/qgis/QGIS-Hugo-Website-Theme/actions/workflows/hugo.yml)
 ![Website Status](https:./README-images.shields.io/website-up-down-green-red/http/kartoza.github.io/hugo-bulma-blocks-theme.svg)
-![License](https:./README-images.shields.io/github/license/kartoza/hugo-bulma-blocks-theme.svg)
+![License](https:./README-images.shields.io/github/license/qgis/QGIS-Hugo-Website-Theme.svg)
 
-![](https:./README-images.shields.io/github/issues/kartoza/hugo-bulma-blocks-theme.svg)
-![](https:./README-images.shields.io/github/issues-closed/kartoza/hugo-bulma-blocks-theme.svg)
-![](https:./README-images.shields.io/github/issues-pr/kartoza/hugo-bulma-blocks-theme.svg)
-![](https:./README-images.shields.io/github/issues-pr-closed/kartoza/hugo-bulma-blocks-theme.svg)
+![](https:./README-images.shields.io/github/issues/qgis/QGIS-Hugo-Website-Theme.svg)
+![](https:./README-images.shields.io/github/issues-closed/qgis/QGIS-Hugo-Website-Theme.svg)
+![](https:./README-images.shields.io/github/issues-pr/qgis/QGIS-Hugo-Website-Theme.svg)
+![](https:./README-images.shields.io/github/issues-pr-closed/qgis/QGIS-Hugo-Website-Theme.svg)
 
 
 Project stars:
-![Stars](https://starchart.cc/kartoza/hugo-bulma-blocks-theme.svg)
+![Stars](https://starchart.cc/qgis/QGIS-Hugo-Website-Theme.svg)
 
 ## TLDR
 
@@ -29,7 +29,7 @@ to read it and just want to test this theme out so try this:
 hugo new site YOURSITENAME
 cd YOURSITENAME
 git init
-git submodule add git@github.com:kartoza/hugo-bulma-blocks-theme.git themes/hugo-bulma-blocks-theme
+git submodule add git@github.com:qgis/QGIS-Hugo-Website-Theme.git themes/hugo-bulma-blocks-theme
 git submodule update --init --recursive
 cp themes/hugo-bulma-blocks-theme/exampleSite/config.toml .
 vim config.toml 
@@ -187,7 +187,7 @@ Technology | Notes | Who?
 To quickly check out the theme with our provided sample site, do this:
 
 ```
-git clone https://github.com/kartoza/hugo-bulma-blocks-theme
+git clone https://github.com/qgis/QGIS-Hugo-Website-Theme
 cd hugo-bulma-blocks-theme/exampleSite
 hugo server -t ../..
 ```
@@ -219,7 +219,7 @@ We are building for a web site that receives a **lot** of traffic so our website
 Navigate to your development directory
 
 ```
-git clone https://github.com/kartoza/hugo-bulma-blocks-theme.git
+git clone https://github.com/qgis/QGIS-Hugo-Website-Theme.git
 ```
 
 ## 🧑🏽‍💻 Development
@@ -265,7 +265,7 @@ If you are using VSCode, I recommend the following extensions:
 Clone the repo:
 
 ```
-git clone https://github.com/kartoza/hugo-bulma-blocks-theme.git
+git clone https://github.com/qgis/QGIS-Hugo-Website-Theme.git
 ```
 
 Run the site:
@@ -295,7 +295,7 @@ pip install pytest pytest-base-url playwright
 These tests exist to make sure code changes to this repository do not break how the site currently functions.
 They are intended to run on each commit to verify the site is working in expected order.
 
-Read more on testing [here](https://github.com/kartoza/hugo-bulma-blocks-theme/blob/main/test/Readme.md).
+Read more on testing [here](https://github.com/qgis/QGIS-Hugo-Website-Theme/blob/main/test/Readme.md).
 
 ## Creating and Running Tests
 
@@ -393,7 +393,7 @@ The site needs to work in production, where the links of the site are all below 
 
 We welcome your contributions! All contributors are expected to sign a contributor license agreement (CLA) which you can see [here](https://gist.github.com/timlinux/cc20c0b8860648da977a261d46b170d4). This process is automatically enabled when you create your first pull request via https://cla-assistant.io/.
 
-[![CLA assistant](https://cla-assistant.io/readme/badge/kartoza/hugo-bulma-blocks-theme)](https://cla-assistant.io/kartoza/hugo-bulma-blocks-theme)
+[![CLA assistant](https://cla-assistant.io/readme/badge/qgis/QGIS-Hugo-Website-Theme)](https://cla-assistant.io/qgis/QGIS-Hugo-Website-Theme)
 
 ## 💮 Changing the templates
 

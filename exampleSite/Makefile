@@ -6,7 +6,7 @@ help:
 		@echo "Help for using this Makefile"
 		@echo
 		@echo "For detailed help please visit:"
-		@echo "https://github.com/kartoza/hugo-bulma-blocks-theme"
+		@echo "https://github.com/qgis/QGIS-Hugo-Website-Theme"
 		@echo
 		@echo "------------------------------------------------------------------"
 		@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort  | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m - %s\n", $$1, $$2}'
