@@ -31,7 +31,7 @@ services:
     environment:
       - DOMAIN=http://localhost:7001
       # If you comment out theme it will default to hugo-clarity
-      - THEME=hugo-bulma-blocks-theme
+      - THEME=QGIS-Hugo-Website-Theme
     volumes:
       # This is non user editable, generated static html
       # will be placed here.

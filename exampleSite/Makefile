@@ -1,5 +1,5 @@
 help:
-		@echo "hugo-bulma-blocks-theme"
+		@echo "QGIS-Hugo-Website-Theme"
 		@echo 
 		@echo "Brought to you by Kartoza (Pty) Ltd."
 		@echo 

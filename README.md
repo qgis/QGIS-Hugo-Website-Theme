@@ -8,7 +8,7 @@ By Tim Sutton
 
 [![E2E Tests](https://github.com/qgis/QGIS-Hugo-Website-Theme/actions/workflows/e2e.yml/badge.svg)](https://github.com/qgis/QGIS-Hugo-Website-Theme/actions/workflows/e2e.yml)
 [![Deploy Hugo site to Pages](https://github.com/qgis/QGIS-Hugo-Website-Theme/actions/workflows/hugo.yml/badge.svg)](https://github.com/qgis/QGIS-Hugo-Website-Theme/actions/workflows/hugo.yml)
-![Website Status](https:./README-images.shields.io/website-up-down-green-red/http/kartoza.github.io/hugo-bulma-blocks-theme.svg)
+![Website Status](https:./README-images.shields.io/website-up-down-green-red/http/kartoza.github.io/QGIS-Hugo-Website-Theme.svg)
 ![License](https:./README-images.shields.io/github/license/qgis/QGIS-Hugo-Website-Theme.svg)
 
 ![](https:./README-images.shields.io/github/issues/qgis/QGIS-Hugo-Website-Theme.svg)
@@ -29,9 +29,9 @@ to read it and just want to test this theme out so try this:
 hugo new site YOURSITENAME
 cd YOURSITENAME
 git init
-git submodule add git@github.com:qgis/QGIS-Hugo-Website-Theme.git themes/hugo-bulma-blocks-theme
+git submodule add git@github.com:qgis/QGIS-Hugo-Website-Theme.git themes/qgis-website-theme
 git submodule update --init --recursive
-cp themes/hugo-bulma-blocks-theme/exampleSite/config.toml .
+cp themes/qgis-website-theme/exampleSite/config.toml .
 vim config.toml 
 hugo server
 ```
@@ -188,7 +188,7 @@ To quickly check out the theme with our provided sample site, do this:
 
 ```
 git clone https://github.com/qgis/QGIS-Hugo-Website-Theme
-cd hugo-bulma-blocks-theme/exampleSite
+cd QGIS-Hugo-Website-Theme/exampleSite
 hugo server -t ../..
 ```
 
