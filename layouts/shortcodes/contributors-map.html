@@ -28,6 +28,29 @@
       <i class="fas fa-map"></i>
     </button>
   </div>
+
+  <!-- Category Filter Legend (inside map overlay) -->
+  <div class="map-category-legend">
+    <label class="map-legend-checkbox-label">
+      <input type="checkbox" id="filter-code" checked>
+      <span class="map-legend-marker code-marker-preview"></span>
+      Code Contributors
+    </label>
+    <label class="map-legend-checkbox-label supporting-checkbox-label">
+      <input type="checkbox" id="filter-supporting" checked>
+      <div class="supporting-legend-types">
+        <span class="supporting-legend-main-label">Supporting Contributors</span>
+        <div class="supporting-legend-type-row">
+          <span class="map-legend-marker supporting-marker-preview"></span>
+          <span>Individual</span>
+        </div>
+        <div class="supporting-legend-type-row">
+          <span class="map-legend-marker supporting-marker-preview supporting-org-preview"></span>
+          <span>Organisation</span>
+        </div>
+      </div>
+    </label>
+  </div>
   
   <!-- Globe View -->
   <div id="globe-view"></div>
@@ -63,8 +86,10 @@
   </div>
 </div>
 
-<!-- Contributor Popup -->
+<!-- Shared popup overlay -->
 <div id="popup-overlay" class="popup-overlay"></div>
+
+<!-- Code Contributor Popup -->
 <div id="contributor-popup" class="contributor-tooltip">
   <button id="popup-close" class="tooltip-close">×</button>
   <div class="card contributor-card" id="popup-card">
@@ -83,6 +108,33 @@
         <span class="has-text-grey">commits</span>
       </div>
       <div class="contribution-badges" id="popup-thematics-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Supporting Contributor Popup -->
+<div id="supporting-contributor-popup" class="contributor-tooltip supporting-contributor-popup">
+  <button id="supporting-popup-close" class="tooltip-close">×</button>
+  <div class="card contributor-card supporting-card" id="supporting-popup-card">
+    <div class="card-content">
+      <div class="columns is-vcentered is-mobile">
+        <div class="column is-narrow">
+          <div class="supporting-avatar-container">
+            <img id="supporting-popup-avatar" src="" alt="Avatar" class="supporting-popup-avatar">
+            <span class="supporting-s-badge">S</span>
+          </div>
+        </div>
+        <div class="column">
+          <h3 class="title is-5 mb-1">
+            <a id="supporting-popup-name-link" href="" target="_blank" rel="noopener" class="external-link"></a>
+            <span id="supporting-popup-name-text" style="display:none;"></span>
+          </h3>
+          <div id="supporting-popup-status" class="mb-2"></div>
+          <div id="supporting-popup-dates" class="is-size-7 has-text-grey mb-2"></div>
+        </div>
+      </div>
+      <div class="content is-small supporting-popup-description" id="supporting-popup-description"></div>
+      <div class="contribution-badges" id="supporting-popup-roles"></div>
     </div>
   </div>
 </div>
