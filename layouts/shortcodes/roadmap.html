@@ -33,6 +33,14 @@
                             <span>Each month we create a new point release for our stable version. These releases contain no new features, only bug fixes. </span>
                         </span>
                     </div>
+                    <div class="countdown-date-wrapper">
+                        <span class="icon-text">
+                            <span class="icon has-text-grey">
+                                <i class="far fa-calendar-alt"></i>
+                            </span>
+                            <span id="point-release-date" class="countdown-date"></span>
+                        </span>
+                    </div>
                     <nav id="point-release" class="level">
                         <div class="level-item is-narrow has-text-centered">
                             <div>
@@ -127,6 +135,14 @@
                             <span>Each month we create a new point release for our latest version. These releases contain no new features, only bug fixes. </span>
                         </span>
                     </div>
+                    <div class="countdown-date-wrapper">
+                        <span class="icon-text">
+                            <span class="icon has-text-grey">
+                                <i class="far fa-calendar-alt"></i>
+                            </span>
+                            <span id="latest-point-release-date" class="countdown-date"></span>
+                        </span>
+                    </div>
                     <nav id="latest-point-release" class="level">
                         <div class="level-item is-narrow has-text-centered">
                             <div>
@@ -219,6 +235,14 @@
                                 <span>During feature freeze, no new features are accepted, only bug fixes and code clean ups.</span>
                             </span>
                         </div>
+                        <div class="countdown-date-wrapper">
+                            <span class="icon-text">
+                                <span class="icon has-text-grey">
+                                    <i class="far fa-calendar-alt"></i>
+                                </span>
+                                <span id="freeze-date" class="countdown-date"></span>
+                            </span>
+                        </div>
                         <nav id="freeze" class="level">
                             <div class="level-item is-narrow has-text-centered">
                                 <div>
@@ -268,6 +292,14 @@
                         </span>
                     </div>
                     <div>
+                        <div class="countdown-date-wrapper">
+                            <span class="icon-text">
+                                <span class="icon has-text-grey">
+                                    <i class="far fa-calendar-alt"></i>
+                                </span>
+                                <span id="package-date" class="countdown-date"></span>
+                            </span>
+                        </div>
                         <nav id="package" class="level">
                             <div class="level-item is-narrow has-text-centered">
                                 <div>
@@ -390,6 +422,13 @@
       initializeClock('latest-point-release', nextPointReleaseDate);
       initializeClock('freeze', nextFreezeDate);
       initializeClock('package', nextReleaseDate);
+
+      // Display the actual dates
+      const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+      document.getElementById('point-release-date').textContent = nextPointReleaseDate.toLocaleDateString('en-GB', dateOptions);
+      document.getElementById('latest-point-release-date').textContent = nextPointReleaseDate.toLocaleDateString('en-GB', dateOptions);
+      document.getElementById('freeze-date').textContent = nextFreezeDate.toLocaleDateString('en-GB', dateOptions);
+      document.getElementById('package-date').textContent = nextReleaseDate.toLocaleDateString('en-GB', dateOptions);
 
       function createiCalendar(event) {
         // Format the date/time in the iCalendar format (UTC)
