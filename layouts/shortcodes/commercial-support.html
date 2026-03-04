@@ -23,12 +23,21 @@
                             ¶
                         </a>
                         {{ if and $match $match.is_contributor }}
-                            <span class="tag is-success mb-5">
-                                <span class="icon">
-                                    <i class="fas fa-check-circle"></i>
+                            {{ if $match.is_active }}
+                                <span class="tag is-success mb-5">
+                                    <span class="icon">
+                                        <i class="fas fa-check-circle"></i>
+                                    </span>
+                                    <span>Active Contributor</span>
                                 </span>
-                                <span>Active Contributor</span>
-                            </span>
+                            {{ else }}
+                                <span class="tag is-warning mb-5">
+                                    <span class="icon">
+                                        <i class="fas fa-clock"></i>
+                                    </span>
+                                    <span>Inactive Contributor</span>
+                                </span>
+                            {{ end }}
                         {{ end }}
                     </div>
                     {{ .description }}
