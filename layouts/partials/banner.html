@@ -3,11 +3,13 @@
 {{ if .Params.HasDownloadBanner }}
     {{ partial "download-banner.html" . }}
 {{ else if .Params.HasBanner }}
-    {{/* ── OSGeo badge resources ───────────────────────── */}}
+    {{/* ── OSGeo badge resources (home page only) ─────── */}}
+    {{ if .IsHome }}
     {{ $osgeoCss := resources.Get "libs/osgeo-badge/osgeo-inject.css" | resources.Minify | resources.Fingerprint }}
     {{ $osgeoJs  := resources.Get "libs/osgeo-badge/osgeo-inject.js"  | resources.Minify | resources.Fingerprint }}
     {{ $osgeoLogo := resources.Get "libs/osgeo-badge/osgeo-logo.svg" }}
     <link rel="stylesheet" href="{{ $osgeoCss.RelPermalink }}">
+    {{ end }}
     {{ $size := .Params.HeroSize | default "is-small" }}
     <section
         class="hero is-primary1 {{ $size }} has-bg-img {{ if .Params.HeroIsUserConference }}user-conference{{ end }}"
@@ -33,6 +35,9 @@
                                     <img src="{{ .Params.Badge | absURL }}" />
                                 </a>
                             {{ end }}
+                            {{ if .IsHome }}
+                            {{ $osgeoJs  := resources.Get "libs/osgeo-badge/osgeo-inject.js"  | resources.Minify | resources.Fingerprint }}
+                            {{ $osgeoLogo := resources.Get "libs/osgeo-badge/osgeo-logo.svg" }}
                             <span id="osgeo-badge-inline" style="position: relative;"></span>
                             <script defer
                                 src="{{ $osgeoJs.RelPermalink }}"
@@ -41,6 +46,7 @@
                                 data-logo-url="{{ $osgeoLogo.RelPermalink }}"
                                 data-theme="auto"
                             ></script>
+                            {{ end }}
                         </div>
                         <h1 class="title hero-title pr-3">
                             {{ .Params.Title }}
