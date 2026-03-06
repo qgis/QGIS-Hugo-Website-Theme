@@ -1,4 +1,5 @@
 {{/* see https://bulma.io/documentation/layout/hero/ for size options */}}
+{{ partial "qgis-announcement.html" . }}
 {{ if .Params.HasDownloadBanner }}
     {{ partial "download-banner.html" . }}
 {{ else if .Params.HasBanner }}

@@ -1,0 +1,64 @@
+{{/*
+  QGIS release announcement bar.
+  Params:
+    AnnouncementLabel     – short badge text  (default: "New Release")
+    AnnouncementTitle     – bold headline      (required)
+    AnnouncementText      – supporting blurb   (optional)
+    AnnouncementLink      – CTA href           (required)
+    AnnouncementLinkText  – CTA label          (default: "See what's new")
+*/}}
+{{ if .Params.HasAnnouncement }}
+<div class="qgis-announcement" role="banner" aria-label="QGIS Release Announcement">
+  <div class="container">
+    <div class="columns is-vcentered is-mobile is-multiline">
+
+      {{/* ── Badge ──────────────────────────────────────────────── */}}
+      <div class="column is-narrow is-hidden-mobile">
+        <a href="{{ .Params.AnnouncementLink | absURL }}" class="qgis-announcement-badge tag is-medium is-warning has-text-weight-bold">
+          <span class="icon is-small mr-1">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+              <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/>
+            </svg>
+          </span>
+          <span>{{ .Params.AnnouncementLabel | default "New Release" }}</span>
+        </a>
+      </div>
+
+      {{/* ── Text ───────────────────────────────────────────────── */}}
+      <div class="column">
+        <div class="qgis-announcement-content">
+          <span class="qgis-announcement-title has-text-white has-text-weight-bold">
+            {{ .Params.AnnouncementTitle | default "QGIS 4.0 Released" }}
+          </span>
+          {{ if .Params.AnnouncementText }}
+            <span class="qgis-announcement-text has-text-white is-hidden-mobile">
+              &nbsp;&mdash;&nbsp;{{ .Params.AnnouncementText }}
+            </span>
+          {{ end }}
+        </div>
+      </div>
+
+      {{/* ── CTA button ─────────────────────────────────────────── */}}
+      {{ if .Params.AnnouncementLink }}
+        <div class="column is-narrow">
+          <a
+            href="{{ .Params.AnnouncementLink | absURL }}"
+            class="button is-white is-small has-text-weight-semibold qgis-announcement-cta"
+          >
+            <span>{{ .Params.AnnouncementLinkText | default "See what's new" }}</span>
+            <span class="icon is-small">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+                <path d="M12 4l-1.4 1.4L16.2 11H4v2h12.2l-5.6 5.6L12 20l8-8z"/>
+              </svg>
+            </span>
+          </a>
+        </div>
+      {{ end }}
+
+    </div>
+  </div>
+
+  {{/* Decorative shimmer stripe */}}
+  <div class="qgis-announcement-shimmer" aria-hidden="true"></div>
+</div>
+{{ end }}

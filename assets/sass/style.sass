@@ -166,3 +166,117 @@ code
   left: 10px
   bottom: 10px
   z-index: 10
+
+// ── QGIS Release Announcement Bar ─────────────────────────────────────────────────
+.qgis-announcement
+  position: relative
+  overflow: hidden
+  background: linear-gradient(100deg, {{ .Param "primary1" }} 0%, {{ .Param "complementary1" }} 100%)
+  padding: 0.65rem 1.5rem
+  z-index: 30
+
+  // Subtle top-border accent line
+  &::before
+    content: ""
+    position: absolute
+    top: 0
+    left: 0
+    right: 0
+    height: 3px
+    background: linear-gradient(90deg, {{ .Param "primary4" }}, {{ .Param "primary6" }}, {{ .Param "primary4" }})
+    background-size: 200% 100%
+    animation: announcement-topline 3s linear infinite
+
+  .columns
+    margin: 0
+
+  // Pulsing badge (an <a> tag)
+  .qgis-announcement-badge
+    background: {{ .Param "primary4" }} !important
+    color: #333 !important
+    border: none
+    border-radius: 4px
+    letter-spacing: 0.05em
+    animation: badge-pulse 2.5s ease-in-out infinite
+    font-size: 0.7rem
+    padding: 0.4em 0.7em
+    text-decoration: none
+    cursor: pointer
+    &:hover
+      background: #fff !important
+      color: #333 !important
+
+  // Headline text
+  .qgis-announcement-title
+    font-size: 1rem
+    font-weight: 600
+    letter-spacing: 0.01em
+
+  // Supporting text
+  .qgis-announcement-text
+    font-size: 0.9rem
+    opacity: 0.9
+
+  // CTA button – solid white for high contrast on green gradient
+  .qgis-announcement-cta
+    background-color: #fff !important
+    color: {{ .Param "primary1" }} !important
+    border: 2px solid #fff !important
+    border-radius: 20px
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.15s ease, border-color 0.2s ease
+    white-space: nowrap
+
+    &:hover
+      background-color: {{ .Param "primary4" }} !important
+      border-color: {{ .Param "primary4" }} !important
+      color: #333 !important
+      transform: translateX(2px)
+
+  // Shimmering diagonal stripe overlay
+  .qgis-announcement-shimmer
+    position: absolute
+    top: -50%
+    left: -15%
+    width: 40px
+    height: 200%
+    background: rgba(255, 255, 255, 0.12)
+    transform: rotate(20deg)
+    animation: announcement-shimmer 4s ease-in-out infinite
+
+  // On mobile the context menu grows to 6em (vs ~40px on desktop),
+  // push the bar below it
+  @media screen and (max-width: 768px)
+    margin-top: calc(6em - 40px)
+    padding: 0.6rem 1rem
+    .qgis-announcement-title
+      font-size: 0.875rem
+    .qgis-announcement-cta
+      font-size: 0.75rem
+      padding: 0.3em 0.8em
+
+// Animations
+@keyframes badge-pulse
+  0%, 100%
+    transform: scale(1)
+    box-shadow: 0 0 0 0 rgba(238, 231, 102, 0.5)
+  50%
+    transform: scale(1.06)
+    box-shadow: 0 0 0 6px rgba(238, 231, 102, 0)
+
+@keyframes announcement-shimmer
+  0%
+    left: -15%
+    opacity: 0
+  20%
+    opacity: 1
+  80%
+    opacity: 1
+  100%
+    left: 110%
+    opacity: 0
+
+@keyframes announcement-topline
+  0%
+    background-position: 0% 0%
+  100%
+    background-position: 200% 0%
