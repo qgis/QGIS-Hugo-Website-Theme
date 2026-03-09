@@ -3,13 +3,7 @@
 {{ if .Params.HasDownloadBanner }}
     {{ partial "download-banner.html" . }}
 {{ else if .Params.HasBanner }}
-    {{/* ── OSGeo badge resources (home page only) ─────── */}}
-    {{ if .IsHome }}
-    {{ $osgeoCss := resources.Get "libs/osgeo-badge/osgeo-inject.css" | resources.Minify | resources.Fingerprint }}
-    {{ $osgeoJs  := resources.Get "libs/osgeo-badge/osgeo-inject.js"  | resources.Minify | resources.Fingerprint }}
-    {{ $osgeoLogo := resources.Get "libs/osgeo-badge/osgeo-logo.svg" }}
-    <link rel="stylesheet" href="{{ $osgeoCss.RelPermalink }}">
-    {{ end }}
+
     {{ $size := .Params.HeroSize | default "is-small" }}
     <section
         class="hero is-primary1 {{ $size }} has-bg-img {{ if .Params.HeroIsUserConference }}user-conference{{ end }}"
@@ -23,7 +17,7 @@
                 
                 <div class="column is-8 is-flex hero-text has-text-left">
                     <div class="hero-container">
-                        <div class="is-flex" style="gap: 1rem;">
+                        <div class="is-flex is-flex-wrap-wrap" style="gap: 1rem;">
                             {{ if .Params.LabelText }}
                                 <div class="label">
                                     {{ .Params.LabelText }}
@@ -35,17 +29,12 @@
                                     <img src="{{ .Params.Badge | absURL }}" />
                                 </a>
                             {{ end }}
-                            {{ if .IsHome }}
-                            {{ $osgeoJs  := resources.Get "libs/osgeo-badge/osgeo-inject.js"  | resources.Minify | resources.Fingerprint }}
-                            {{ $osgeoLogo := resources.Get "libs/osgeo-badge/osgeo-logo.svg" }}
-                            <span id="osgeo-badge-inline" style="position: relative;"></span>
-                            <script defer
-                                src="{{ $osgeoJs.RelPermalink }}"
-                                data-collapsed="true"
-                                data-inline="osgeo-badge-inline"
-                                data-logo-url="{{ $osgeoLogo.RelPermalink }}"
-                                data-theme="auto"
-                            ></script>
+                            {{ if and .Params.OsgeoBadge .Params.OsgeoBadgeLink }}
+                                <a class="badge-image osgeo-badge" href="{{ .Params.OsgeoBadgeLink | absURL }}" target="_blank">
+                                    <span class="hero-badge-label">an</span>
+                                    <img src="{{ .Params.OsgeoBadge | absURL }}" />
+                                    <span class="hero-badge-label">project</span>
+                                </a>
                             {{ end }}
                         </div>
                         <h1 class="title hero-title pr-3">
