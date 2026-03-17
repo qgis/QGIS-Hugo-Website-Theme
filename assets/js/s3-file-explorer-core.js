@@ -29,21 +29,41 @@
         const date = new Date(dateString);
         const now = new Date();
         const diffTime = Math.abs(now - date);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        const diffMins = Math.floor(diffTime / (1000 * 60));
+        const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
         
-        if (diffDays < 1) {
-            return 'Today';
+        if (diffMins < 1) {
+            return 'Just now';
+        } else if (diffMins < 60) {
+            return `${diffMins} minute${diffMins !== 1 ? 's' : ''} ago`;
+        } else if (diffHours < 24) {
+            return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
         } else if (diffDays < 2) {
             return 'Yesterday';
         } else if (diffDays < 7) {
             return `${diffDays} days ago`;
         } else {
-            return date.toLocaleDateString('en-US', { 
+            return date.toLocaleDateString('en-GB', { 
                 year: 'numeric', 
                 month: 'short', 
                 day: 'numeric' 
             });
         }
+    }
+
+    // Format precise datetime for tooltip
+    function formatDateTooltip(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleString('en-GB', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            timeZoneName: 'short'
+        });
     }
     
     // Get icon class for file category
@@ -127,7 +147,7 @@
         html += `
                 </td>
                 <td class="is-hidden-mobile">${file.size_formatted}</td>
-                <td class="is-hidden-mobile">${formatDate(file.last_modified)}</td>
+                <td class="is-hidden-mobile" title="${formatDateTooltip(file.last_modified)}">${formatDate(file.last_modified)}</td>
             </tr>
         `;
         
@@ -202,6 +222,7 @@
         getDownloadUrl,
         countFilesInFolder,
         formatDate,
+        formatDateTooltip,
         getCategoryIcon,
         getCategoryColor,
         sortFiles,
