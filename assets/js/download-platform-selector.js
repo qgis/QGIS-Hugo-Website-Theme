@@ -44,7 +44,7 @@
         }
 
         // Detect and set default platform
-        const defaultPlatform = checkStoredPreference() || detectOS();
+        const defaultPlatform = detectOS() || checkStoredPreference();
         
         // Set up Bulma dropdown click handlers
         platformOptions.forEach(option => {
