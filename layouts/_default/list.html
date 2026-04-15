@@ -12,7 +12,7 @@
             <div class="content column is-9">
             <h1 class="title">{{ .Title }}</h1>
             {{ if .Params.subtitle }}
-                <p class="is-size-5">{{ .Params.subtitle }}</p>
+                <p class="is-size-5">{{ safeHTML .Params.subtitle }}</p>
             {{ end }}
 
                 {{ range (.Paginator 500 ).Pages }}
