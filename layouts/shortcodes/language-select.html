@@ -1,17 +1,15 @@
 {{ $selectedLang := .Page.Params.selected_language }}
-{{ $langData := dict }}
-{{ range .Site.Data.languages }}
-    {{ $langData = merge $langData (dict .code .) }}
-{{ end }}
+{{ $threshold := .Site.Params.langRedirectThreshold | default 35 | float }}
+{{ $coverage := .Site.Data.tx_coverage }}
 <div class="language-select-container p-5 mb-5 mt-5">
     <div class="field is-flex is-align-items-center" style="gap: 10px;">
         <label class="mb-0 has-text-weight-medium">{{ i18n "chooseYourLanguage" }}:</label>
         <div class="control has-icons-left">
             <div class="select">
                 <select>
-                    {{ range .Site.Languages }}
-                    {{ $entry := index $langData .Lang }}
-                    {{ with $entry }}
+                    {{ range .Site.Data.languages }}
+                    {{ $cov := index $coverage .code | default 0.0 | float }}
+                    {{ if ge $cov $threshold }}
                     <option value="/{{ .code }}/" {{ if eq (printf "/%s/" .code) $selectedLang }}selected{{ end }}>
                         {{ .displayName }}
                     </option>

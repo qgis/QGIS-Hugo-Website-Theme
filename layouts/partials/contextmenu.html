@@ -23,13 +23,11 @@
                     <div class="dropdown-menu is-right" id="dropdown-menu" role="menu">
                         <div class="dropdown-content" style="max-height: 50dvh; overflow-y: auto;">
                             <div class=" is-multiline is-gapless">
-                                {{ $langData := dict }}
+                                {{ $threshold := .Site.Params.langRedirectThreshold | default 35 | float }}
+                                {{ $coverage := .Site.Data.tx_coverage }}
                                 {{ range .Site.Data.languages }}
-                                    {{ $langData = merge $langData (dict .code .) }}
-                                {{ end }}
-                                {{ range .Site.Languages }}
-                                    {{ $entry := index $langData .Lang }}
-                                    {{ with $entry }}
+                                    {{ $cov := index $coverage .code | default 0.0 | float }}
+                                    {{ if ge $cov $threshold }}
                                 <a href="/{{ .code }}/" class="dropdown-item lang-option" data-lang="{{ .code }}" title="{{ .displayName }}" style="display: block; padding: 0.5rem;">
                                     {{ .displayName }}
                                 </a>
