@@ -1,7 +1,7 @@
 {{ $selectedLang := .Page.Params.selected_language }}
-{{ $activeLangs := slice }}
-{{ range .Site.Languages }}
-    {{ $activeLangs = $activeLangs | append .Lang }}
+{{ $langData := dict }}
+{{ range .Site.Data.languages }}
+    {{ $langData = merge $langData (dict .code .) }}
 {{ end }}
 <div class="language-select-container p-5 mb-5 mt-5">
     <div class="field is-flex is-align-items-center" style="gap: 10px;">
@@ -9,8 +9,9 @@
         <div class="control has-icons-left">
             <div class="select">
                 <select>
-                    {{ range .Site.Data.languages }}
-                    {{ if in $activeLangs .code }}
+                    {{ range .Site.Languages }}
+                    {{ $entry := index $langData .Lang }}
+                    {{ with $entry }}
                     <option value="/{{ .code }}/" {{ if eq (printf "/%s/" .code) $selectedLang }}selected{{ end }}>
                         {{ .displayName }}
                     </option>

@@ -23,12 +23,13 @@
                     <div class="dropdown-menu is-right" id="dropdown-menu" role="menu">
                         <div class="dropdown-content" style="max-height: 50dvh; overflow-y: auto;">
                             <div class=" is-multiline is-gapless">
-                                {{ $activeLangs := slice }}
-                                {{ range .Site.Languages }}
-                                    {{ $activeLangs = $activeLangs | append .Lang }}
-                                {{ end }}
+                                {{ $langData := dict }}
                                 {{ range .Site.Data.languages }}
-                                    {{ if in $activeLangs .code }}
+                                    {{ $langData = merge $langData (dict .code .) }}
+                                {{ end }}
+                                {{ range .Site.Languages }}
+                                    {{ $entry := index $langData .Lang }}
+                                    {{ with $entry }}
                                 <a href="/{{ .code }}/" class="dropdown-item lang-option" data-lang="{{ .code }}" title="{{ .displayName }}" style="display: block; padding: 0.5rem;">
                                     {{ .displayName }}
                                 </a>
