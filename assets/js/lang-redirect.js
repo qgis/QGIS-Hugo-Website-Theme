@@ -54,7 +54,7 @@
             {{- if ge $cov $lrThreshold -}}
                 {{- $lrSlugs = $lrSlugs | append .code -}}
             {{- end -}}
-        {{- end -}}
+        {{- end }}
         var LANG_SLUGS = {{ $lrSlugs | jsonify }};
         log('LANG_SLUGS', LANG_SLUGS);
         if (!Array.isArray(LANG_SLUGS) || LANG_SLUGS.length === 0) { return; }
