@@ -19,4 +19,50 @@
     download
 >Nightly builds for macOS</a>
 
+<h2 class="title is-size-5">{{ i18n "alternativeDownloads" }}:</h2>
+
+<p class="mb-1">{{ printf (i18n "ltrReleaseMacOS") .ltrversion .ltrnote }}</p>
+<div class="buttons mb-3">
+  {{ if .ltr_dmg_torrent }}
+  <a class="button is-primary1" href="{{ .ltr_dmg_torrent }}">
+    <span class="icon"><i class="fas fa-file-download"></i></span>
+    <span>{{ i18n "torrentFile" }}</span>
+  </a>
+  {{ end }}
+  {{ if .ltr_dmg_magnet }}
+  <a class="button is-primary1" href="{{ .ltr_dmg_magnet | safeURL }}">
+    <span class="icon"><i class="fas fa-magnet"></i></span>
+    <span>{{ i18n "magnetLink" }}</span>
+  </a>
+  {{ end }}
+  {{ if .ltr_dmg_meta4 }}
+  <a class="button is-primary1" href="{{ .ltr_dmg_meta4 }}">
+    <span class="icon"><i class="fas fa-link"></i></span>
+    <span>{{ i18n "metalinkFile" }}</span>
+  </a>
+  {{ end }}
+</div>
+
+<p class="mb-1">{{ printf (i18n "latestReleaseMacOS") .version }}</p>
+<div class="buttons mb-3">
+  {{ if .lr_dmg_torrent }}
+  <a class="button is-primary1 is-outlined" href="{{ .lr_dmg_torrent }}">
+    <span class="icon"><i class="fas fa-file-download"></i></span>
+    <span>{{ i18n "torrentFile" }}</span>
+  </a>
+  {{ end }}
+  {{ if .lr_dmg_magnet }}
+  <a class="button is-primary1 is-outlined" href="{{ .lr_dmg_magnet | safeURL }}">
+    <span class="icon"><i class="fas fa-magnet"></i></span>
+    <span>{{ i18n "magnetLink" }}</span>
+  </a>
+  {{ end }}
+  {{ if .lr_dmg_meta4 }}
+  <a class="button is-primary1 is-outlined" href="{{ .lr_dmg_meta4 }}">
+    <span class="icon"><i class="fas fa-link"></i></span>
+    <span>{{ i18n "metalinkFile" }}</span>
+  </a>
+  {{ end }}
+</div>
+
 {{ end }}
