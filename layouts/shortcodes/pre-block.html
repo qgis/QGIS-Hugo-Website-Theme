@@ -1,0 +1,2 @@
+{{- $classes := .Get "textClasses" -}}
+<pre class="{{ $classes }}">{{ .Inner | safeHTML }}</pre>
