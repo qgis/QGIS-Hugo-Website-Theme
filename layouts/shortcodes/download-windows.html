@@ -41,4 +41,51 @@
 <p>
     {{ i18n "windows64BitOnly" }}
 </p>
+
+<h2 class="title is-size-5">{{ i18n "alternativeDownloads" }}:</h2>
+
+<p class="mb-1">{{ printf (i18n "ltrInstallerForWindows") .ltrversion .ltrnote }}</p>
+<div class="buttons mb-3">
+  {{ if .ltr_msi_torrent }}
+  <a class="button is-primary1" href="{{ .ltr_msi_torrent }}">
+    <span class="icon"><i class="fas fa-file-download"></i></span>
+    <span>{{ i18n "torrentFile" }}</span>
+  </a>
+  {{ end }}
+  {{ if .ltr_msi_magnet }}
+  <a class="button is-primary1" href="{{ .ltr_msi_magnet | safeURL }}">
+    <span class="icon"><i class="fas fa-magnet"></i></span>
+    <span>{{ i18n "magnetLink" }}</span>
+  </a>
+  {{ end }}
+  {{ if .ltr_msi_meta4 }}
+  <a class="button is-primary1" href="{{ .ltr_msi_meta4 }}">
+    <span class="icon"><i class="fas fa-link"></i></span>
+    <span>{{ i18n "metalinkFile" }}</span>
+  </a>
+  {{ end }}
+</div>
+
+<p class="mb-1">{{ printf (i18n "latestInstallerForWindows") .version }}</p>
+<div class="buttons mb-3">
+  {{ if .lr_msi_torrent }}
+  <a class="button is-primary1 is-outlined" href="{{ .lr_msi_torrent }}">
+    <span class="icon"><i class="fas fa-file-download"></i></span>
+    <span>{{ i18n "torrentFile" }}</span>
+  </a>
+  {{ end }}
+  {{ if .lr_msi_magnet }}
+  <a class="button is-primary1 is-outlined" href="{{ .lr_msi_magnet | safeURL }}">
+    <span class="icon"><i class="fas fa-magnet"></i></span>
+    <span>{{ i18n "magnetLink" }}</span>
+  </a>
+  {{ end }}
+  {{ if .lr_msi_meta4 }}
+  <a class="button is-primary1 is-outlined" href="{{ .lr_msi_meta4 }}">
+    <span class="icon"><i class="fas fa-link"></i></span>
+    <span>{{ i18n "metalinkFile" }}</span>
+  </a>
+  {{ end }}
+</div>
+
 {{ end }}
