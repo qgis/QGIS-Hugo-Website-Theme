@@ -11,6 +11,35 @@
 (function() {
   const STORAGE_KEY = 'qgis-preferred-language';
   const DEFAULT_LANG = 'en';
+  const STORAGE_EXPIRY_DAYS = 365;
+
+  // Save language preference with a timestamp for expiry tracking.
+  // English is saved explicitly so that lang-redirect.js can detect
+  // that the user deliberately chose English and not auto-redirect.
+  function saveLang(lang) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ lang: lang || DEFAULT_LANG, ts: Date.now() }));
+    } catch (e) { /* storage unavailable */ }
+  }
+
+  // Load language preference, returning null if absent or expired.
+  // Backwards-compatible with the old plain-string format.
+  function loadLang() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return null;
+      let data;
+      try { data = JSON.parse(raw); } catch (e) { return raw; } // old plain-string
+      if (!data || typeof data !== 'object') return String(raw);
+      if ((Date.now() - data.ts) / 86400000 > STORAGE_EXPIRY_DAYS) {
+        localStorage.removeItem(STORAGE_KEY);
+        return null;
+      }
+      return data.lang || null;
+    } catch (e) {
+      return null;
+    }
+  }
 
   /**
    * Initialize language switcher
@@ -62,31 +91,27 @@
   }
 
   /**
-   * Restore saved language preference
-   * Redirects to saved language if on root path and coverage is sufficient
+   * Restore saved language preference.
+   * Redirects to saved language only after verifying the target page exists,
+   * preventing redirect loops when a page hasn't been translated.
    */
   function restoreSavedLanguage() {
-    const savedLang = localStorage.getItem(STORAGE_KEY);
-    
-    if (!savedLang || savedLang === DEFAULT_LANG) {
-      return; // No saved preference or saved as English
-    }
-    
-    // Check if we're on a non-prefixed URL (root or English content)
+    const savedLang = loadLang();
+    if (!savedLang || savedLang === DEFAULT_LANG) return;
+
     const pathname = window.location.pathname;
     const parts = pathname.split('/').filter(Boolean);
-    
-    // If already on a language-prefixed URL, don't redirect
     const langPattern = /^[a-z]{2}(-[a-z]{2,}|_[a-z]{2})?$/i;
-    if (parts.length > 0 && langPattern.test(parts[0])) {
-      return; // Already on a language-prefixed URL
-    }
-    
-    // Redirect to saved language if not already there
-    if (savedLang !== DEFAULT_LANG) {
-      const newPath = `/${savedLang}${pathname}`;
-      window.location.href = newPath;
-    }
+    if (parts.length > 0 && langPattern.test(parts[0])) return; // already on a language-prefixed URL
+
+    const newPath = `/${savedLang}${pathname}`;
+    // HEAD-check before redirecting: if the translated page doesn't exist,
+    // stay on the current page rather than bouncing to a 404.
+    fetch(newPath, { method: 'HEAD' })
+      .then(function(resp) {
+        if (resp.ok) window.location.href = newPath;
+      })
+      .catch(function() { /* network error — stay on current page */ });
   }
 
   /**
@@ -102,12 +127,8 @@
         const lang = this.getAttribute('data-lang');
         const langName = this.textContent;
         
-        // Save to localStorage
-        if (lang === DEFAULT_LANG) {
-          localStorage.removeItem(STORAGE_KEY);
-        } else {
-          localStorage.setItem(STORAGE_KEY, lang);
-        }
+        // Save to localStorage (with expiry timestamp)
+        saveLang(lang);
         
         // Update display
         updateLanguageDisplay(lang);

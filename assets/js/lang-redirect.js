@@ -23,15 +23,39 @@
         var REDIRECT_ENABLED = {{ with .Site.Params.langRedirectEnabled }}{{ . }}{{ else }}true{{ end }};
         if (!REDIRECT_ENABLED) { log('skip: disabled by config'); return; }
 
+        // If the user has an explicit saved language preference (including English),
+        // respect it and skip auto-detection entirely.
+        try {
+            var _stored = localStorage.getItem('qgis-preferred-language');
+            if (_stored) {
+                var _pref;
+                try { _pref = JSON.parse(_stored); } catch (e) { _pref = { lang: _stored, ts: Date.now() }; }
+                var _expDays = 365;
+                if (_pref && _pref.lang && (Date.now() - (_pref.ts || 0)) / 86400000 <= _expDays) {
+                    log('skip: explicit user preference', _pref.lang); return;
+                }
+            }
+        } catch (e) { /* storage unavailable, continue with detection */ }
+
         // Coverage data and threshold from Hugo data/params
         var COVERAGE = {{- with .Site.Data.tx_coverage -}}{{- . | jsonify -}}{{- else -}}{}{{- end -}};
-        var THRESHOLD = {{ with .Site.Params.langRedirectThreshold }}{{ . }}{{ else }}80{{ end }};
+        var THRESHOLD = {{ with .Site.Params.langRedirectThreshold }}{{ . }}{{ else }}35{{ end }};
         log('threshold', THRESHOLD);
 
         // Redirect from any non-prefixed path (not only root)
 
-        // Supported language slugs from site languages (reflect URL prefixes)
-        var LANG_SLUGS = {{- $slugs := slice -}}{{- range .Site.Languages -}}{{- $slugs = $slugs | append .Lang -}}{{- end -}}{{- $slugs | jsonify -}};
+        // Supported language slugs: languages from data/languages.json meeting the coverage threshold.
+        // Uses the same source of truth as the language switcher dropdown.
+        {{- $lrThreshold := .Site.Params.langRedirectThreshold | default 35 | float -}}
+        {{- $lrCoverage := .Site.Data.tx_coverage -}}
+        {{- $lrSlugs := slice -}}
+        {{- range .Site.Data.languages -}}
+            {{- $cov := index $lrCoverage .code | default 0.0 | float -}}
+            {{- if ge $cov $lrThreshold -}}
+                {{- $lrSlugs = $lrSlugs | append .code -}}
+            {{- end -}}
+        {{- end }}
+        var LANG_SLUGS = {{ $lrSlugs | jsonify }};
         log('LANG_SLUGS', LANG_SLUGS);
         if (!Array.isArray(LANG_SLUGS) || LANG_SLUGS.length === 0) { return; }
 
