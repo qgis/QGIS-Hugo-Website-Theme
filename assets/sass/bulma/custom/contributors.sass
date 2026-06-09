@@ -332,6 +332,32 @@
   .sol-katz-card
     padding: 1.5rem
 
+// Table view styles
+#contributors-table-view
+  th
+    white-space: nowrap
+    vertical-align: middle
+
+  th.sortable
+    cursor: pointer
+    user-select: none
+
+  th.sortable:hover
+    background-color: hsl(0, 0%, 96%)
+
+  .sort-icon
+    display: inline-block
+    margin-left: 0.3rem
+    opacity: 0.4
+
+  th.sortable:hover .sort-icon
+    opacity: 1
+
+  th.sortable .fa-sort-up,
+  th.sortable .fa-sort-down
+    opacity: 1
+    color: $primary5
+
 // Contributors Filter and Search Styles (minimal custom properties)
 .contributors-filter-section
   .control.has-icons-left .input:focus
