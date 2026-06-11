@@ -163,8 +163,10 @@
 function thanks(element) {
     event.preventDefault();
     window.open(element.href);
-    // Redirect to thank you page after a short delay
+    // Redirect to thank you page after a short delay, preserving the current language
     setTimeout(function() {
-        window.location.href = '/download/thank-you';
+        var pathMatch = window.location.pathname.match(/^\/([a-z]{2}(?:[-_][a-zA-Z]{2,4})?)\//i);
+        var langPrefix = pathMatch ? '/' + pathMatch[1] : '';
+        window.location.href = langPrefix + '/thank-you/';
     }, 500);
 }
