@@ -16,7 +16,9 @@
      of the whole index on every rebuild. */}}
 {{- $delim := "@@QGISFRAGMENT@@" -}}
 {{- $index := slice -}}
-{{- range .Site.RegularPages -}}
+{{- range where .Site.RegularPages "Title" "!=" "" -}}
+    {{/* Untitled pages are asset containers (content/funders/index.md and
+         friends), not something a visitor can usefully be sent to. */}}
     {{- $page := . -}}
     {{- $content := .Content | replaceRE `(?s)<nav id="sidebar" class="sidebar">.*?</nav>` "" -}}
     {{/* Mark the start of every h2/h3 so the page can be split on them. */}}
