@@ -39,7 +39,7 @@
                 </div>
             <div id="search-control" class="control has-icons-right search-control">
                 <form action="{{ "search/" | absURL }}" method="GET">
-                    <input class="input is-small" type="search" id="search-query" name="q" placeholder="Search">
+                    <input class="input is-small" type="search" id="search-query" name="q" placeholder="{{ i18n "searchPlaceholder" }}">
                     <span class="icon is-right">
                         <i class="fa-solid fa-magnifying-glass"></i>
                     </span>
@@ -48,3 +48,4 @@
         </div>
     </div>
 </div>
+{{ partial "search-modal.html" . }}

@@ -5,34 +5,41 @@
 
 <section class="section">
     <div class="container content narrow search-cantainer" >
-    <h1 class="title">{{ i18n "searchResults" }}</h1>
+        <header class="search-header">
+            <h1 class="title">
+                {{ i18n "searchResults" }}
+                {{/* Filled in by search.js from the ?q= parameter. */}}
+                <span class="search-header-query" id="search-header-query"></span>
+            </h1>
+            <p class="search-header-count" id="search-header-count"></p>
+        </header>
         <div class="search-loading">{{ i18n "loading" }}</div>
         <div class="list">
             <div id="search-results"></div>
         </div>
     </div>
-</section>  
-    
-    {{/* This javascript template will get iteratively rendered into the 
+</section>
+
+    {{/* This javascript template will get iteratively rendered into the
          div above with id of search-results. See search.js for
          logic of how this template is called. */}}
     <script id="search-result-template" type="text/x-js-template">
-        <a href="${link}" class="search-item">
-                <div class="list-item">
+        <a href="${link}" class="search-item box">
+            <div class="list-item">
                 <div id="summary-${key}" class="list-item-content">
+                    ${ isset context }<div class="list-item-context">${context}</div>${ end }
                     <div class="list-item-title">${title}
                     </div>
-                    ${ isset context }<div class="list-item-context">${context}</div>${ end }
                     <div class="list-item-description">
                         ${snippet}
                     </div>
-                    <div class="tags is-pulled-right">  
-                        ${ isset categories }${categories}${ end } 
+                    <div class="tags is-pulled-right">
+                        ${ isset categories }${categories}${ end }
                         ${ isset tags }${tags}${ end }
-                    </div>        
+                    </div>
                 </div>
             </div>
-        </a>    
+        </a>
     </script>
 
 

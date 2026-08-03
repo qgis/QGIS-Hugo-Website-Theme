@@ -35,6 +35,7 @@ if (inputBox !== null) {
     var searchQuery = param("q");
     if (searchQuery) {
         inputBox.value = searchQuery || "";
+        echoQuery(searchQuery);
         executeSearch(searchQuery, false);
     } else {
         var results = document.getElementById('search-results')
@@ -42,6 +43,21 @@ if (inputBox !== null) {
             results.innerHTML =
             '<p class="search-results-empty">{{ i18n "searchPrompt" }} <a href="{{ "tags/" | absURL }}">{{ i18n "searchAllTags" }}</a></p>';
         }
+    }
+}
+
+// Show the visitor which words produced the results they are looking at.
+function echoQuery(searchQuery) {
+    var echo = document.getElementById('search-header-query');
+    if (echo !== null) {
+        echo.textContent = '“' + searchQuery + '”';
+    }
+}
+
+function reportResultCount(count) {
+    var element = document.getElementById('search-header-count');
+    if (element !== null) {
+        element.textContent = count + ' ' + '{{ i18n "searchResultsCount" }}';
     }
 }
 
@@ -58,6 +74,7 @@ function executeSearch(searchQuery) {
         response.json().then(function (pages) {
             var fuse = new Fuse(pages, fuseOptions);
             var result = runSearch(fuse, searchQuery);
+            reportResultCount(result.length);
             if (result.length > 0) {
                 populateResults(result);
             } else {
