@@ -176,6 +176,8 @@
             src="{{ .Site.Params.uniNavHeaderUrl }}"
         ></script>
 
+        {{ partial "osgeo-inject.html" . }}
+
         {{/* Language redirect is handled by assets/js/lang-redirect.js */}}
         </head>
 
