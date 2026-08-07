@@ -9,6 +9,9 @@
  * - Grid / Table view toggle
  * - Sortable table columns
  * - Clickable badges to activate thematic filters
+ *
+ * Grid cards and table rows are matched on their `data-login` attribute so
+ * both views are driven by a single filtered list.
  */
 
 class ContributorsFilter {
@@ -37,6 +40,7 @@ class ContributorsFilter {
         this.filterButtons = document.querySelectorAll('.filter-button');
         this.resetButton = document.getElementById('reset-filters');
         this.gridContainer = document.getElementById('contributors-grid-view');
+        this.gridDivider = document.getElementById('contributors-grid-divider');
         this.tableContainer = document.getElementById('contributors-table-view');
         this.tableBody = document.getElementById('contributors-table-body');
         this.statsShowing = document.getElementById('stats-showing');
@@ -48,29 +52,25 @@ class ContributorsFilter {
     }
 
     parseContributors() {
-        const cards = document.querySelectorAll('.contributor-card.individual');
+        const rowsByLogin = new Map();
+        document.querySelectorAll('.contributor-table-row').forEach(row => {
+            rowsByLogin.set(row.dataset.login, row);
+        });
 
-        cards.forEach(card => {
-            const contributor = {
-                element: card.closest('.column'),
-                login: card.querySelector('.title.is-4 a.external-link')?.textContent.trim() || '',
-                isHonorary: card.classList.contains('honorary-member'),
-                thematics: [],
-                searchText: ''
-            };
+        document.querySelectorAll('.contributor-card-column').forEach(column => {
+            const login = column.dataset.login || '';
+            const thematics = (column.dataset.thematics || '').split(' ').filter(Boolean);
 
-            const badges = card.querySelectorAll('.badge-filter-btn');
-            badges.forEach(badge => {
-                const thematic = badge.dataset.thematic;
-                if (thematic) contributor.thematics.push(thematic);
+            this.contributors.push({
+                element: column,
+                row: rowsByLogin.get(login) || null,
+                login: login,
+                isPinned: column.dataset.pinned === 'true',
+                thematics: thematics,
+                searchText: [login, ...thematics.map(t => t.replace(/_/g, ' '))]
+                    .join(' ')
+                    .toLowerCase()
             });
-
-            contributor.searchText = [
-                contributor.login,
-                ...contributor.thematics.map(t => t.replace(/_/g, ' '))
-            ].join(' ').toLowerCase();
-
-            this.contributors.push(contributor);
         });
 
         this.filteredContributors = [...this.contributors];
@@ -103,7 +103,6 @@ class ContributorsFilter {
         }
 
         this.updateFilterButtonsUI();
-        this.applyViewToggle();
     }
 
     updateFilterButtonsUI() {
@@ -111,20 +110,33 @@ class ContributorsFilter {
             const thematic = button.dataset.thematic;
             button.classList.toggle('is-active', this.activeThematicFilters.has(thematic));
         });
+
+        document.querySelectorAll('.badge-filter-btn').forEach(badge => {
+            const active = this.activeThematicFilters.has(badge.dataset.thematic);
+            badge.classList.toggle('is-filter-active', active);
+            badge.setAttribute('aria-pressed', String(active));
+        });
     }
 
     applyViewToggle() {
-        if (this.currentView === 'table') {
-            if (this.gridContainer) this.gridContainer.style.display = 'none';
-            if (this.tableContainer) this.tableContainer.style.display = '';
-            if (this.gridBtn) this.gridBtn.classList.remove('is-active');
-            if (this.tableBtn) this.tableBtn.classList.add('is-active');
-        } else {
-            if (this.gridContainer) this.gridContainer.style.display = '';
-            if (this.tableContainer) this.tableContainer.style.display = 'none';
-            if (this.gridBtn) this.gridBtn.classList.add('is-active');
-            if (this.tableBtn) this.tableBtn.classList.remove('is-active');
+        const isTable = this.currentView === 'table';
+        const hasResults = this.filteredContributors.length > 0;
+
+        if (this.gridContainer) {
+            this.gridContainer.style.display = (!isTable && hasResults) ? '' : 'none';
         }
+        if (this.tableContainer) {
+            this.tableContainer.style.display = (isTable && hasResults) ? '' : 'none';
+        }
+        this.setViewButtonState(this.gridBtn, !isTable);
+        this.setViewButtonState(this.tableBtn, isTable);
+    }
+
+    setViewButtonState(button, isSelected) {
+        if (!button) return;
+        button.classList.toggle('is-active', isSelected);
+        button.classList.toggle('is-primary3', isSelected);
+        button.setAttribute('aria-pressed', String(isSelected));
     }
 
     updateURL() {
@@ -157,16 +169,7 @@ class ContributorsFilter {
 
         this.filterButtons.forEach(button => {
             button.addEventListener('click', () => {
-                const thematic = button.dataset.thematic;
-                if (this.activeThematicFilters.has(thematic)) {
-                    this.activeThematicFilters.delete(thematic);
-                    button.classList.remove('is-active');
-                } else {
-                    this.activeThematicFilters.add(thematic);
-                    button.classList.add('is-active');
-                }
-                this.applyFilters();
-                this.updateURL();
+                this.toggleThematicFilter(button.dataset.thematic);
             });
         });
 
@@ -175,21 +178,11 @@ class ContributorsFilter {
         }
 
         if (this.gridBtn) {
-            this.gridBtn.addEventListener('click', () => {
-                this.currentView = 'grid';
-                this.applyViewToggle();
-                this.updateURL();
-            });
+            this.gridBtn.addEventListener('click', () => this.switchView('grid'));
         }
 
         if (this.tableBtn) {
-            this.tableBtn.addEventListener('click', () => {
-                this.currentView = 'table';
-                this.applyViewToggle();
-                this.applyTableFilters();
-                this.sortTable();
-                this.updateURL();
-            });
+            this.tableBtn.addEventListener('click', () => this.switchView('table'));
         }
 
         this.sortableHeaders.forEach(th => {
@@ -209,106 +202,98 @@ class ContributorsFilter {
         document.querySelectorAll('.badge-filter-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                const thematic = btn.dataset.thematic;
-                if (this.activeThematicFilters.has(thematic)) {
-                    this.activeThematicFilters.delete(thematic);
-                } else {
-                    this.activeThematicFilters.add(thematic);
-                }
-                this.updateFilterButtonsUI();
-                this.applyFilters();
-                this.updateURL();
+                this.toggleThematicFilter(btn.dataset.thematic);
             });
         });
     }
 
+    toggleThematicFilter(thematic) {
+        if (!thematic) return;
+
+        if (this.activeThematicFilters.has(thematic)) {
+            this.activeThematicFilters.delete(thematic);
+        } else {
+            this.activeThematicFilters.add(thematic);
+        }
+        this.updateFilterButtonsUI();
+        this.applyFilters();
+        this.updateURL();
+    }
+
+    switchView(view) {
+        this.currentView = view;
+        this.applyViewToggle();
+        if (view === 'table') this.sortTable();
+        this.updateURL();
+    }
+
     applyFilters() {
         this.filteredContributors = this.contributors.filter(contributor => {
-            let thematicMatch = true;
-            if (this.activeThematicFilters.size > 0) {
-                thematicMatch = contributor.thematics.some(t => this.activeThematicFilters.has(t));
-            }
+            const thematicMatch = this.activeThematicFilters.size === 0
+                || contributor.thematics.some(t => this.activeThematicFilters.has(t));
 
-            let searchMatch = true;
-            if (this.searchQuery) {
-                searchMatch = contributor.searchText.includes(this.searchQuery);
-            }
+            const searchMatch = !this.searchQuery
+                || contributor.searchText.includes(this.searchQuery);
 
             return thematicMatch && searchMatch;
         });
 
         this.updateDisplay();
         this.updateStats();
-        this.applyTableFilters();
+        this.applyViewToggle();
         if (this.currentView === 'table') this.sortTable();
     }
 
     updateDisplay() {
-        this.contributors.forEach(c => { c.element.style.display = 'none'; });
+        const visible = new Set(this.filteredContributors);
+
+        this.contributors.forEach(contributor => {
+            const display = visible.has(contributor) ? '' : 'none';
+            contributor.element.style.display = display;
+            if (contributor.row) contributor.row.style.display = display;
+        });
+
+        // The divider only makes sense when the pinned founder and at least one
+        // other contributor are both visible.
+        if (this.gridDivider) {
+            const pinnedVisible = this.filteredContributors.some(c => c.isPinned);
+            const othersVisible = this.filteredContributors.some(c => !c.isPinned);
+            this.gridDivider.style.display = (pinnedVisible && othersVisible) ? '' : 'none';
+        }
 
         if (this.filteredContributors.length > 0) {
-            this.filteredContributors.forEach(c => { c.element.style.display = ''; });
             this.hideNoResults();
         } else {
             this.showNoResults();
         }
     }
 
-    applyTableFilters() {
-        if (!this.tableBody) return;
-
-        const rows = this.tableBody.querySelectorAll('.contributor-table-row');
-
-        rows.forEach(row => {
-            if (row.dataset.pinned) {
-                row.style.display = '';
-                return;
-            }
-
-            const login = (row.dataset.login || '').toLowerCase();
-            const thematics = (row.dataset.thematics || '').split(' ').filter(Boolean);
-
-            const thematicMatch = this.activeThematicFilters.size === 0
-                || thematics.some(t => this.activeThematicFilters.has(t));
-
-            const searchMatch = !this.searchQuery || login.includes(this.searchQuery);
-
-            row.style.display = (thematicMatch && searchMatch) ? '' : 'none';
-        });
-    }
-
     sortTable() {
         if (!this.tableBody) return;
 
-        const pinnedRows = Array.from(
-            this.tableBody.querySelectorAll('.contributor-table-row[data-pinned]')
-        );
-        const visibleRows = Array.from(
-            this.tableBody.querySelectorAll('.contributor-table-row:not([data-pinned])')
-        ).filter(r => r.style.display !== 'none');
-        const hiddenRows = Array.from(
-            this.tableBody.querySelectorAll('.contributor-table-row:not([data-pinned])')
-        ).filter(r => r.style.display === 'none');
+        const rows = Array.from(this.tableBody.querySelectorAll('.contributor-table-row'));
+        const pinnedRows = rows.filter(r => r.dataset.pinned);
+        const sortableRows = rows.filter(r => !r.dataset.pinned);
 
         const col = this.sortCol;
         const dir = this.sortDir;
 
-        visibleRows.sort((a, b) => {
-            let aVal = a.dataset[col] || '';
-            let bVal = b.dataset[col] || '';
+        sortableRows.sort((a, b) => {
+            const aVal = a.dataset[col] || '';
+            const bVal = b.dataset[col] || '';
 
             if (col === 'login') {
                 return dir === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
             }
 
-            aVal = parseFloat(aVal) || 0;
-            bVal = parseFloat(bVal) || 0;
-            return dir === 'asc' ? aVal - bVal : bVal - aVal;
+            const aNum = parseFloat(aVal) || 0;
+            const bNum = parseFloat(bVal) || 0;
+            return dir === 'asc' ? aNum - bNum : bNum - aNum;
         });
 
-        [...pinnedRows, ...visibleRows, ...hiddenRows].forEach(row => {
-            this.tableBody.appendChild(row);
-        });
+        const fragment = document.createDocumentFragment();
+        [...pinnedRows, ...sortableRows].forEach(row => fragment.appendChild(row));
+        this.tableBody.appendChild(fragment);
 
         this.updateSortIcons();
     }
@@ -341,7 +326,7 @@ class ContributorsFilter {
         if (this.searchInput) this.searchInput.value = '';
         this.searchQuery = '';
         this.activeThematicFilters.clear();
-        this.filterButtons.forEach(btn => btn.classList.remove('is-active'));
+        this.updateFilterButtonsUI();
         this.applyFilters();
         this.updateURL();
 
@@ -351,7 +336,7 @@ class ContributorsFilter {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    if (document.querySelector('.contributor-card.individual')) {
+    if (document.querySelector('.contributor-card-column')) {
         new ContributorsFilter();
     }
 });
