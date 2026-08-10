@@ -1,19 +1,18 @@
-{{ $selectedLang := .Page.Params.selected_language }}
-{{ $threshold := .Site.Params.langRedirectThreshold | default 35 | float }}
-{{ $coverage := .Site.Data.tx_coverage }}
+{{/* The documentation is only built for the languages in data/docs_languages.json,
+     generated from the QGIS-Documentation Makefile. Do not fall back to
+     data/languages.json here: that is the website UI locale list and offering it
+     produces dead links on docs.qgis.org. */}}
+{{ $selectedLang := .Page.Params.selected_language | default "en" }}
 <div class="language-select-container p-5 mb-5 mt-5">
     <div class="field is-flex is-align-items-center" style="gap: 10px;">
         <label class="mb-0 has-text-weight-medium">{{ i18n "chooseYourLanguage" }}:</label>
         <div class="control has-icons-left">
             <div class="select">
                 <select>
-                    {{ range .Site.Data.languages }}
-                    {{ $cov := index $coverage .code | default 0.0 | float }}
-                    {{ if ge $cov $threshold }}
-                    <option value="/{{ .code }}/" {{ if eq (printf "/%s/" .code) $selectedLang }}selected{{ end }}>
+                    {{ range .Site.Data.docs_languages }}
+                    <option value="{{ .docsCode }}" {{ if eq .code $selectedLang }}selected{{ end }}>
                         {{ .displayName }}
                     </option>
-                    {{ end }}
                     {{ end }}
                 </select>
             </div>
