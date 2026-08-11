@@ -29,7 +29,7 @@
                         {{ $thumbnail_url = relURL (path.Join (path.Dir .Path) $thumbnail_url) }}
                     {{ end }}
                 {{ end }}
-                {{ $has_right := cond (eq $thumbnail_url nil) "" "has-right" }}
+                {{ $has_right := cond $thumbnail_url "has-right" "" }}
 
                 <div class="container rich {{ $has_right }}" >
                     <div class="cont coloring-1">
