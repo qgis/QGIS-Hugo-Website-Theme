@@ -1,19 +1,84 @@
 /* Customize mark tag used by search results */
+$search-accent: #3A9800
+
 .search-cantainer
-  min-height: 70vh 
+  min-height: 70vh
+  /* Each result is its own card so the boundary between hits is obvious. */
   .search-item
-    padding: 1rem
     display: block
-    &:hover
-      box-shadow: 0rem 0rem 1rem #ccd2d687
-      .list-item-title 
-        color: #3A9800
-  .list-item-title 
+    margin-bottom: 1rem
+    border: 1px solid #e6ebee
+    box-shadow: 0 0.125rem 0.5rem rgba(56, 86, 104, 0.06)
+    transition: box-shadow 0.15s ease-out, transform 0.15s ease-out, border-color 0.15s ease-out
+    &:hover, &:focus-visible
+      border-color: rgba(58, 152, 0, 0.35)
+      box-shadow: 0 0.5rem 1.25rem rgba(56, 86, 104, 0.14)
+      transform: translateY(-2px)
+      .list-item-title
+        color: $search-accent
+  .list-item-title
     font-size: 20px
   .list-item-description
     font-weight: 300
     color: #385668
-      
+
+.search-header
+  margin-bottom: 2rem
+  .title
+    margin-bottom: 0.25rem
+  /* The term the visitor actually typed, echoed back from the ?q= parameter. */
+  .search-header-query
+    color: $search-accent
+  .search-header-count
+    color: #6b7f8c
+    font-size: 0.9rem
+
+@media (prefers-reduced-motion: reduce)
+  .search-cantainer .search-item
+    transition: none
+    &:hover, &:focus-visible
+      transform: none
+
+/* Focused search prompt opened from the context menu search box. */
+.search-modal
+  z-index: 100
+  .modal-background
+    background-color: rgba(15, 32, 43, 0.45)
+    backdrop-filter: blur(8px)
+    -webkit-backdrop-filter: blur(8px)
+  .modal-content
+    overflow: visible
+  /* Bulma centres the dialog, which on a phone puts it behind the on-screen
+     keyboard. Pin it to the top instead, where the keyboard cannot reach.
+     .modal is flex-direction: column, so the vertical axis is justify-content;
+     align-items must stay centred or the dialog slides sideways. */
+  @media screen and (max-width: 768px)
+    justify-content: flex-start
+    .modal-content
+      margin-top: 4rem
+      max-height: none
+
+.search-modal-dialog
+  background-color: #fff
+  border-radius: 8px
+  padding: 1.5rem
+  box-shadow: 0 1.5rem 3rem rgba(15, 32, 43, 0.3)
+
+.search-modal-control
+  .input
+    border-radius: 6px
+    &:focus
+      border-color: $search-accent
+      box-shadow: 0 0 0 0.125em rgba(58, 152, 0, 0.25)
+  .icon
+    color: #6b7f8c
+
+.search-modal-hint
+  color: #6b7f8c
+  font-size: 0.85rem
+  margin: 0.75rem 0 0
+  text-align: center
+
 mark
   background: #fbe1ad
   padding: .05rem 0.25em
