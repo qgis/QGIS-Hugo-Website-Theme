@@ -1,0 +1,36 @@
+{{/*
+    OSGeo affiliate badge - https://github.com/timlinux/osgeo-inject (MIT)
+    Vendored at upstream commit efda81d62b2a1a9151423338fed977f93bd11971 (v0.1.0).
+
+    Fully self-hosted: no requests leave the site. data-base-url is required
+    because upstream derives its asset root by stripping /js/osgeo-inject.js
+    from its own src, which Hugo's fingerprinted filenames do not match - it
+    would otherwise silently fall back to https://affiliate.osgeo.org.
+
+    The logo and announcement are published through the assets pipeline with
+    resources.Copy rather than from static/, because the script builds those two
+    URLs at runtime from data-base-url and so needs them at exact, unfingerprinted
+    paths. Calling .RelPermalink on each is what actually publishes them, so the
+    preload hints below are load-bearing as well as being a genuine win - the
+    script fetches both immediately on the homepage.
+
+    Homepage only, so the CSS is deliberately kept out of the site-wide
+    css/all.css bundle.
+*/}}
+{{ if .IsHome }}
+    {{ $osgeocss := resources.Get "css/osgeo-inject.css" | resources.Minify | resources.Fingerprint }}
+    <link rel="stylesheet" href="{{ $osgeocss.RelPermalink }}" />
+    {{ $osgeologo := resources.Get "osgeo-inject/osgeo-logo.svg" | resources.Copy "/osgeo-inject/images/osgeo-logo.svg" }}
+    <link rel="preload" as="image" type="image/svg+xml" href="{{ $osgeologo.RelPermalink }}" />
+    {{ $osgeoann := resources.Get "osgeo-inject/announcement.json" | resources.Copy "/osgeo-inject/content/announcement.json" }}
+    <link rel="preload" as="fetch" type="application/json" crossorigin href="{{ $osgeoann.RelPermalink }}" />
+    {{ $osgeojs := resources.Get "js/osgeo-inject.js" | resources.Minify | resources.Fingerprint }}
+    <script
+        defer
+        src="{{ $osgeojs.RelPermalink }}"
+        data-base-url="{{ "osgeo-inject" | relURL }}"
+        data-position="bottom-left"
+        data-collapsed="true"
+        data-theme="auto"
+    ></script>
+{{ end }}
