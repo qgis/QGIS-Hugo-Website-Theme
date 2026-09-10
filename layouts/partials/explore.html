@@ -10,7 +10,7 @@
     <div class="columns">
         <div class="column photo">
             <figure>
-                <img src="{{ absURL "img/explore.jpg" }}" />
+                <img src="{{ absURL "img/explore.webp" }}" />
             </figure>
         </div>
         <div class="column text">
@@ -30,7 +30,10 @@
                     {{ i18n "learnHowPeopleSolveProblems" }}
                 </li>
             </ul>
-            <a class="button is-size-5" href="{{ relLangURL "community/involve" }}"> {{ i18n "getInvolved" }} </a>
+            <div class="community-actions">
+                {{ partial "osgeo-button.html" . }}
+                <a class="button is-size-5" href="{{ relLangURL "community/involve" }}"> {{ i18n "getInvolved" }} </a>
+            </div>
         </div>
     </div>
 </div>

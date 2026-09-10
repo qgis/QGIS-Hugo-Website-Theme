@@ -1,0 +1,27 @@
+{{/*
+    OSGeo affiliation button - a plain link to the QGIS project page on osgeo.org,
+    styled as a sibling of the "Get involved" CTA.
+
+    Deliberately has no expanded state: see qgis/QGIS-Website#1081, where both the
+    floating popup and the inline expandable card were judged too prominent for
+    what is essentially a single outbound link.
+
+    The button keeps the CTA's geometry but takes a light fill instead of the
+    orange one, so the logo can be shown in its own colours (#003A40 teal,
+    #4CB05C green). Logo is vendored from timlinux/osgeo-inject @ efda81d (MIT).
+*/}}
+{{ $logo := resources.Get "img/osgeo-logo.svg" }}
+<a
+    class="button is-size-5 osgeo-button"
+    href="https://www.osgeo.org/projects/qgis/"
+    target="_blank"
+    rel="noopener"
+>
+    <img
+        src="{{ $logo.RelPermalink }}"
+        alt="{{ i18n "anOsgeoProject" }}"
+        width="258"
+        height="84"
+        loading="lazy"
+    />
+</a>
