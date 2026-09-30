@@ -17,7 +17,19 @@
 
                 {{ range (.Paginator 500 ).Pages }}
                 {{ $thumbnail_url := .Params.thumbnail }}
-                {{ $has_right := cond (eq $thumbnail_url nil) "" "has-right" }}
+                {{/* A relative thumbnail like "images/foo.png" is written
+                     relative to the page's own content directory, but this
+                     list can render pages from nested directories (e.g. the
+                     case studies under /project/), where the raw value would
+                     resolve against the list page's URL and 404. Resolve it
+                     against the entry's directory; absolute and external
+                     values are kept as they are. */}}
+                {{ if and $thumbnail_url (not (or (hasPrefix $thumbnail_url "/") (hasPrefix $thumbnail_url "http"))) }}
+                    {{ with .File }}
+                        {{ $thumbnail_url = relURL (path.Join (path.Dir .Path) $thumbnail_url) }}
+                    {{ end }}
+                {{ end }}
+                {{ $has_right := cond $thumbnail_url "has-right" "" }}
 
                 <div class="container rich {{ $has_right }}" >
                     <div class="cont coloring-1">
