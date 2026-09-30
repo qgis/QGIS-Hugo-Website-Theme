@@ -1,0 +1,38 @@
+{{/* Focused search prompt, opened by the search input in contextmenu.html.
+     Behaviour lives in assets/js/search-modal.js. The form is rendered here
+     rather than built in JS so the action URL can be resolved by Hugo. */}}
+<div class="modal search-modal" id="search-modal">
+    <div class="modal-background" data-search-modal-close></div>
+    <div class="modal-content">
+        <div
+            class="search-modal-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="search-modal-label"
+        >
+            <h2 class="is-sr-only" id="search-modal-label">{{ i18n "searchTitle" }}</h2>
+            <form action="{{ "search/" | absURL }}" method="GET" role="search">
+                <div class="control has-icons-left search-modal-control">
+                    <input
+                        class="input is-medium"
+                        type="search"
+                        id="search-modal-query"
+                        name="q"
+                        autocomplete="off"
+                        placeholder="{{ i18n "searchPlaceholder" }}"
+                        aria-describedby="search-modal-hint"
+                    >
+                    <span class="icon is-left">
+                        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                    </span>
+                </div>
+                <p class="search-modal-hint" id="search-modal-hint">{{ i18n "searchHint" }}</p>
+            </form>
+        </div>
+    </div>
+    <button
+        class="modal-close is-large"
+        aria-label="{{ i18n "searchClose" }}"
+        data-search-modal-close
+    ></button>
+</div>

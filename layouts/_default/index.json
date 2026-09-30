@@ -1,6 +1,55 @@
-{{- $.Scratch.Add "index" slice -}}
-{{- range .Site.RegularPages -}}
-    {{- $plainContent := .Content | replaceRE "(?s)<nav id=\"sidebar\" class=\"sidebar\">.*?</nav>" "" | plainify -}}
-    {{- $.Scratch.Add "index" (dict "title" .Title "tags" .Params.tags "categories" .Params.categories "contents" $plainContent "permalink" .Permalink) -}}
+{{/* Search index.
+
+     Each page is split into one entry per h2/h3 heading so that search results
+     link straight to the relevant section anchor (e.g. /resources/support/faq/#how-to-cite-qgis)
+     instead of dropping the visitor at the top of a long page. Content appearing
+     before the first heading is emitted as a page-level entry.
+
+     Fields:
+       title     - heading text, or the page title for the page-level entry
+       page      - the owning page title, shown as context in search results
+       contents  - plain text of that section only
+       permalink - page permalink, with #anchor for heading entries
+*/}}
+{{/* Built in a local variable, not .Scratch: a page's Scratch survives
+     `hugo server` rebuilds, so an accumulating slice would append a fresh copy
+     of the whole index on every rebuild. */}}
+{{- $delim := "@@QGISFRAGMENT@@" -}}
+{{- $index := slice -}}
+{{- range where .Site.RegularPages "Title" "!=" "" -}}
+    {{/* Untitled pages are asset containers (content/funders/index.md and
+         friends), not something a visitor can usefully be sent to. */}}
+    {{- $page := . -}}
+    {{- $content := .Content | replaceRE `(?s)<nav id="sidebar" class="sidebar">.*?</nav>` "" -}}
+    {{/* Mark the start of every h2/h3 so the page can be split on them. */}}
+    {{- $content = replaceRE `<h([23]) id="([^"]*)"` (printf `%s<h$1 id="$2"` $delim) $content -}}
+    {{- range $i, $chunk := split $content $delim -}}
+        {{- $isHeading := ne $i 0 -}}
+        {{- $anchor := "" -}}
+        {{- $title := $page.Title -}}
+        {{- if $isHeading -}}
+            {{- with findRE `id="[^"]*"` $chunk 1 -}}
+                {{- $anchor = index . 0 | strings.TrimPrefix `id="` | strings.TrimSuffix `"` -}}
+            {{- end -}}
+            {{- with findRE `(?s)^<h[23][^>]*>.*?</h[23]>` $chunk 1 -}}
+                {{- $title = index . 0 | replaceRE `(?s)<a class="heading-anchor".*?</a>` "" | plainify | replaceRE `\s+` " " | strings.TrimSpace -}}
+            {{- end -}}
+        {{- end -}}
+        {{/* Drop the heading itself from the body; it is already carried by title. */}}
+        {{- $body := $chunk | replaceRE `(?s)^<h[23][^>]*>.*?</h[23]>` "" | plainify | replaceRE `\s+` " " | strings.TrimSpace -}}
+        {{- if or $body (and $isHeading $title) -}}
+            {{- $permalink := $page.Permalink -}}
+            {{- if $anchor -}}
+                {{- $permalink = printf "%s#%s" $page.Permalink $anchor -}}
+            {{- end -}}
+            {{- $index = $index | append (dict
+                "title" $title
+                "page" $page.Title
+                "tags" $page.Params.tags
+                "categories" $page.Params.categories
+                "contents" $body
+                "permalink" $permalink) -}}
+        {{- end -}}
+    {{- end -}}
 {{- end -}}
-{{- $.Scratch.Get "index" | jsonify -}}
+{{- $index | jsonify -}}
