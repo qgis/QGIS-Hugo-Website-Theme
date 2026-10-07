@@ -398,3 +398,41 @@
 .contributors-no-results
   border: 2px dashed hsl(0, 0%, 86%)
 
+
+// ─── Local user groups list (reuses the contributor cards) ──────────────────
+
+.flag-emoji
+  font-family: "Twemoji Country Flags", "Apple Color Emoji", "Segoe UI Emoji", sans-serif
+
+.contributor-card.user-group
+  .avatar
+    border: none
+    border-radius: 12%
+    object-fit: contain
+    background: white
+
+  .user-group-contacts
+    overflow-wrap: anywhere
+
+  &.is-inactive
+    opacity: 0.65
+    filter: grayscale(0.6)
+
+.user-group-logo-small
+  width: 36px
+  height: 36px
+  object-fit: contain
+  border-radius: 12%
+  background: white
+
+.contributor-badge-continent
+  color: #4d6370
+  background: #ecf1f4
+
+.include-inactive-toggle
+  cursor: pointer
+  user-select: none
+
+  input
+    margin-right: 0.4rem
+    accent-color: $primary5

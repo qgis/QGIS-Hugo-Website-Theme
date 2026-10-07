@@ -148,5 +148,7 @@
 <script src="{{ $olJS.RelPermalink }}"></script>
 
 <!-- Load map functionality -->
+{{ $baseJs := resources.Get "js/globe-flat-map.js" }}
+<script src="{{ $baseJs.RelPermalink }}"></script>
 {{ $js := resources.Get "js/contributors-map.js" }}
 <script src="{{ $js.RelPermalink }}"></script>

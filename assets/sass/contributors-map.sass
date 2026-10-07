@@ -714,3 +714,62 @@ img[crossorigin="anonymous"]
 // Ensure avatar images render properly
 img[crossorigin="anonymous"]
   border-radius: 50%
+
+// ─── User groups map ─────────────────────────────────────────────────────────
+
+.user-group-marker
+  &:focus-visible
+    outline: 3px solid #ee7913
+    outline-offset: 3px
+    border-radius: 50%
+
+.contributor-tooltip.user-group-popup
+  max-width: 420px
+  width: 92%
+
+  .card-content
+    max-height: 80vh
+    overflow-y: auto
+
+.user-group-popup-card
+  border-top: 4px solid #589632 !important
+
+  &:hover
+    transform: none !important
+
+.user-group-entry
+  display: flex
+  gap: 1rem
+  align-items: flex-start
+
+  & + &
+    margin-top: 1.25rem
+    padding-top: 1.25rem
+    border-top: 1px solid #e1e1e1
+
+.user-group-entry-logo
+  width: 72px
+  height: 72px
+  flex-shrink: 0
+  object-fit: contain
+  background: white
+  border: 2px solid #589632
+  border-radius: 10%
+  padding: 4px
+
+.user-group-entry-info
+  min-width: 0
+  overflow-wrap: anywhere
+
+// ─── Flat map in Equal Earth ─────────────────────────────────────────────────
+// The world is about twice as wide as it is tall in Equal Earth: size the
+// user groups flat view to match, so the whole world fills the frame. The
+// contributors map keeps its taller frame, which leaves room for its legend.
+
+.contributors-map-container.user-groups-map
+  min-height: 0
+
+  #flat-map-view
+    height: auto
+    aspect-ratio: 2.05 / 1
+    min-height: 320px

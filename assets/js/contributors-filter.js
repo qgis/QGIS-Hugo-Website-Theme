@@ -12,6 +12,13 @@
  *
  * Grid cards and table rows are matched on their `data-login` attribute so
  * both views are driven by a single filtered list.
+ *
+ * Other lists (e.g. local user groups) reuse this script with the same DOM
+ * hooks. They configure it through attributes on #contributors-table-view:
+ * - data-default-sort="col:dir"   default table sort (default "total:desc")
+ * - data-text-cols="a b"          columns sorted as text (default "login")
+ * and, optionally, an #include-inactive checkbox: items with
+ * data-active="false" stay hidden unless it is checked.
  */
 
 class ContributorsFilter {
@@ -21,14 +28,14 @@ class ContributorsFilter {
         this.activeThematicFilters = new Set();
         this.searchQuery = '';
         this.currentView = 'grid';
-        this.sortCol = 'total';
-        this.sortDir = 'desc';
+        this.includeInactive = false;
 
         this.init();
     }
 
     init() {
         this.cacheElements();
+        this.readConfig();
         this.parseContributors();
         this.loadFromURL();
         this.attachEventListeners();
@@ -49,6 +56,17 @@ class ContributorsFilter {
         this.gridBtn = document.getElementById('view-grid-btn');
         this.tableBtn = document.getElementById('view-table-btn');
         this.sortableHeaders = document.querySelectorAll('#contributors-table-view th.sortable');
+        this.inactiveToggle = document.getElementById('include-inactive');
+    }
+
+    readConfig() {
+        const config = this.tableContainer ? this.tableContainer.dataset : {};
+        const [col, dir] = (config.defaultSort || 'total:desc').split(':');
+        this.defaultSortCol = col || 'total';
+        this.defaultSortDir = dir === 'asc' ? 'asc' : 'desc';
+        this.textCols = new Set((config.textCols || 'login').split(' ').filter(Boolean));
+        this.sortCol = this.defaultSortCol;
+        this.sortDir = this.defaultSortDir;
     }
 
     parseContributors() {
@@ -60,14 +78,17 @@ class ContributorsFilter {
         document.querySelectorAll('.contributor-card-column').forEach(column => {
             const login = column.dataset.login || '';
             const thematics = (column.dataset.thematics || '').split(' ').filter(Boolean);
+            // Extra searchable text (names, countries...) beyond the login
+            const extraSearch = column.dataset.search || '';
 
             this.contributors.push({
                 element: column,
                 row: rowsByLogin.get(login) || null,
                 login: login,
                 isPinned: column.dataset.pinned === 'true',
+                isActive: column.dataset.active !== 'false',
                 thematics: thematics,
-                searchText: [login, ...thematics.map(t => t.replace(/_/g, ' '))]
+                searchText: [login, extraSearch, ...thematics.map(t => t.replace(/[_-]/g, ' '))]
                     .join(' ')
                     .toLowerCase()
             });
@@ -94,6 +115,11 @@ class ContributorsFilter {
 
         const viewParam = params.get('view');
         if (viewParam === 'table') this.currentView = 'table';
+
+        if (this.inactiveToggle && params.get('inactive') === '1') {
+            this.includeInactive = true;
+            this.inactiveToggle.checked = true;
+        }
 
         const sortParam = params.get('sort');
         if (sortParam) {
@@ -147,7 +173,8 @@ class ContributorsFilter {
             params.set('filters', Array.from(this.activeThematicFilters).join(','));
         }
         if (this.currentView === 'table') params.set('view', 'table');
-        if (this.sortCol !== 'total' || this.sortDir !== 'desc') {
+        if (this.includeInactive) params.set('inactive', '1');
+        if (this.sortCol !== this.defaultSortCol || this.sortDir !== this.defaultSortDir) {
             params.set('sort', `${this.sortCol}:${this.sortDir}`);
         }
 
@@ -181,6 +208,14 @@ class ContributorsFilter {
             this.gridBtn.addEventListener('click', () => this.switchView('grid'));
         }
 
+        if (this.inactiveToggle) {
+            this.inactiveToggle.addEventListener('change', () => {
+                this.includeInactive = this.inactiveToggle.checked;
+                this.applyFilters();
+                this.updateURL();
+            });
+        }
+
         if (this.tableBtn) {
             this.tableBtn.addEventListener('click', () => this.switchView('table'));
         }
@@ -192,7 +227,7 @@ class ContributorsFilter {
                     this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
                 } else {
                     this.sortCol = col;
-                    this.sortDir = col === 'login' ? 'asc' : 'desc';
+                    this.sortDir = this.textCols.has(col) ? 'asc' : 'desc';
                 }
                 this.sortTable();
                 this.updateURL();
@@ -235,7 +270,9 @@ class ContributorsFilter {
             const searchMatch = !this.searchQuery
                 || contributor.searchText.includes(this.searchQuery);
 
-            return thematicMatch && searchMatch;
+            const activeMatch = this.includeInactive || contributor.isActive;
+
+            return thematicMatch && searchMatch && activeMatch;
         });
 
         this.updateDisplay();
@@ -282,7 +319,7 @@ class ContributorsFilter {
             const aVal = a.dataset[col] || '';
             const bVal = b.dataset[col] || '';
 
-            if (col === 'login') {
+            if (this.textCols.has(col)) {
                 return dir === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
             }
 
@@ -310,8 +347,11 @@ class ContributorsFilter {
     }
 
     updateStats() {
+        const total = this.includeInactive
+            ? this.contributors.length
+            : this.contributors.filter(c => c.isActive).length;
         if (this.statsShowing) this.statsShowing.textContent = this.filteredContributors.length;
-        if (this.statsTotal) this.statsTotal.textContent = this.contributors.length;
+        if (this.statsTotal) this.statsTotal.textContent = total;
     }
 
     showNoResults() {

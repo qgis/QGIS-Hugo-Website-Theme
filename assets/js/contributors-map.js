@@ -1,60 +1,29 @@
 // Contributors Map JavaScript - Using MapLibre GL (Globe) and OpenLayers (Flat Map)
+// The shared globe/flat behaviour lives in globe-flat-map.js (GlobeFlatMap).
 
-class ContributorsMap {
+const CODE_LAYER = 'code';
+const SUPPORTING_LAYER = 'supporting';
+
+class ContributorsMap extends GlobeFlatMap {
   constructor(contributorsData, supportingData) {
+    super({
+      globeCenter: [150, 10], // Australia coordinates
+      popupIds: ['contributor-popup', 'supporting-contributor-popup']
+    });
     this.contributorsData = contributorsData;
     this.supportingData = supportingData || { features: [] };
-    this.currentView = 'globe';
-    this.globeMap = null;
-    this.flatMap = null;
-    this.vectorLayer = null;
-    // Code contributor markers
-    this.markers = [];
-    this.flatMarkers = [];
-    // Supporting contributor markers
-    this.supportingMarkers = [];
-    this.supportingFlatMarkers = [];
-    this.isRotating = false;
-    this.rotationAnimation = null;
     // Filter state
     this.showCodeContributors = true;
     this.showSupportingContributors = true;
     // Active popup tracking (for URL state)
     this.activeContributorId = null;
     this.activeSupportingId = null;
-    
+
     this.init();
   }
-  
-  init() {
-    this.readUrlState();
-    this.setupEventListeners();
-    this.initGlobeView();
-  }
-  
-  setupEventListeners() {
-    // View toggle buttons
-    document.getElementById('globe-view-btn')?.addEventListener('click', () => {
-      this.switchView('globe');
-    });
-    
-    document.getElementById('flat-view-btn')?.addEventListener('click', () => {
-      this.switchView('flat');
-    });
-    
-    // Code contributor popup close
-    document.getElementById('popup-close')?.addEventListener('click', () => {
-      this.closePopup();
-    });
 
-    // Supporting contributor popup close
-    document.getElementById('supporting-popup-close')?.addEventListener('click', () => {
-      this.closePopup();
-    });
-    
-    document.getElementById('popup-overlay')?.addEventListener('click', () => {
-      this.closePopup();
-    });
+  setupEventListeners() {
+    super.setupEventListeners();
 
     // Category filter checkboxes
     document.getElementById('filter-code')?.addEventListener('change', (e) => {
@@ -69,471 +38,121 @@ class ContributorsMap {
       this.updateUrlState();
     });
   }
-  
-  switchView(view) {
-    this.currentView = view;
-    this.updateUrlState();
-    
-    const globeView = document.getElementById('globe-view');
-    const flatView = document.getElementById('flat-map-view');
-    const globeBtn = document.getElementById('globe-view-btn');
-    const flatBtn = document.getElementById('flat-view-btn');
-    
-    if (view === 'globe') {
-      globeView.style.display = 'block';
-      flatView.style.display = 'none';
-      globeBtn?.classList.add('active');
-      flatBtn?.classList.remove('active');
-      
-      if (!this.globeMap) {
-        this.initGlobeView();
-      } else {
-        this.globeMap.resize();
-        this.updateMarkerVisibility();
-      }
-    } else {
-      globeView.style.display = 'none';
-      flatView.style.display = 'block';
-      globeBtn?.classList.remove('active');
-      flatBtn?.classList.add('active');
-      
-      if (!this.flatMap) {
-        this.initFlatMap();
-      } else {
-        this.flatMap.updateSize();
-        this.updateAllMarkersVisibility();
-      }
-    }
-  }
-  
-  initGlobeView() {
-    // Use MapLibre GL v5.16.0 with globe projection
-    this.globeMap = new maplibregl.Map({
-      container: 'globe-view',
-      zoom: 2.2,
-      center: [150, 10], // Australia coordinates
-      style: {
-        version: 8,
-        projection: {
-          type: 'globe'
-        },
-        sources: {
-          'osm': {
-            type: 'raster',
-            tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
-            tileSize: 256,
-            attribution: '© OpenStreetMap contributors',
-            maxzoom: 19
-          }
-        },
-        layers: [{
-          id: 'osm',
-          type: 'raster',
-          source: 'osm',
-        }],
-        sky: {
-          'atmosphere-blend': [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              0, 1,
-              5, 1,
-              7, 0
-          ]
-        },
-      },
-      maxZoom: 18,
-      minZoom: 0
-    });
-    
-    this.globeMap.on('load', () => {
-      // Add supporting first so code contributors render on top
-      this.addSupportingContributorsToMapLibre();
-      this.addContributorsToMapLibre();
-      if (this.currentView === 'flat') {
-        this.switchView('flat');
-      } else {
-        this._restorePopup();
-        setTimeout(() => this.startRotation(), 500);
-      }
-    });
-    
-    // Stop rotation on any user interaction
-    this.globeMap.on('mousedown', () => this.stopRotation());
-    this.globeMap.on('touchstart', () => this.stopRotation());
-    this.globeMap.on('wheel', () => this.stopRotation());
-    this.globeMap.on('dblclick', () => this.stopRotation());
-  }
-  
-  // ─── Code Contributors ──────────────────────────────────────────────────────
 
-  addContributorsToMapLibre() {
-    const contributorsWithLocation = this.contributorsData.features
-      .filter(f => f.geometry && f.geometry.coordinates)
+  isLayerVisible(layer) {
+    if (layer === CODE_LAYER) return this.showCodeContributors;
+    if (layer === SUPPORTING_LAYER) return this.showSupportingContributors;
+    return true;
+  }
+
+  onGlobeLoad() {
+    // Add supporting first so code contributors render on top
+    this._supportingWithValidCoords().forEach(({ contributor, coords }) => {
+      this.addGlobeMarker(this._supportingMarker(contributor.properties), coords, SUPPORTING_LAYER);
+    });
+
+    const contributorsWithLocation = this._contributorsWithLocation()
       .sort((a, b) => a.properties.total_contributions - b.properties.total_contributions);
-    
+
     this.globeMap.addSource('contributors', {
       type: 'geojson',
       data: { type: 'FeatureCollection', features: contributorsWithLocation }
     });
-    
+
     contributorsWithLocation.forEach((contributor) => {
-      const coords = contributor.geometry.coordinates;
-      const size = this.getMarkerSize(contributor.properties.total_contributions) * 3;
-      const avatarUrl = contributor.properties.avatar_url || '/img/default-avatar.png';
-      const isHonorary = contributor.properties.is_honorary || false;
-      const honoraryIcon = contributor.properties.honorary_icon || '';
-      
-      const el = document.createElement('div');
-      el.className = 'maplibre-marker';
-      el.style.width = `${size}px`;
-      el.style.height = `${size}px`;
-      el.style.cursor = 'pointer';
-      el.style.transition = 'opacity 0.3s ease';
-      
-      const wrapper = document.createElement('div');
-      wrapper.style.position = 'relative';
-      wrapper.style.width = '100%';
-      wrapper.style.height = '100%';
-      
-      const img = document.createElement('img');
-      img.src = avatarUrl;
-      img.style.width = '100%';
-      img.style.height = '100%';
-      img.style.borderRadius = '50%';
-      img.style.border = isHonorary ? '3px solid #ee7913' : '2px solid #589632';
-      img.style.boxShadow = isHonorary ? '0 0 15px rgba(238,121,19,0.8)' : '0 0 10px rgba(88,150,50,0.8)';
-      img.style.objectFit = 'cover';
-      img.style.background = 'white';
-      img.style.display = 'block';
-      img.style.transition = 'transform 0.3s ease, box-shadow 0.3s ease';
-      wrapper.appendChild(img);
-      
-      if (isHonorary && honoraryIcon) {
-        const badge = document.createElement('div');
-        badge.style.position = 'absolute';
-        badge.style.top = '-4px';
-        badge.style.left = '-4px';
-        badge.style.fontSize = '1rem';
-        badge.style.filter = 'drop-shadow(1px 1px 2px rgba(0,0,0,0.3))';
-        badge.style.zIndex = '10';
-        badge.textContent = honoraryIcon;
-        wrapper.appendChild(badge);
-      }
-      
-      el.appendChild(wrapper);
-      
-      el.addEventListener('mouseenter', () => {
-        img.style.transform = 'scale(1.15)';
-        img.style.boxShadow = isHonorary ? '0 0 20px rgba(238,121,19,0.9)' : '0 0 15px rgba(88,150,50,0.9)';
-      });
-      el.addEventListener('mouseleave', () => {
-        img.style.transform = 'scale(1)';
-        img.style.boxShadow = isHonorary ? '0 0 15px rgba(238,121,19,0.8)' : '0 0 10px rgba(88,150,50,0.8)';
-      });
-      el.addEventListener('click', (e) => {
-        e.stopPropagation();
-        this.showContributorPopup(contributor.properties, e);
-      });
-      
-      const marker = new maplibregl.Marker({ element: el, anchor: 'center' })
-        .setLngLat(coords)
-        .addTo(this.globeMap);
-      
-      this.markers.push({ marker, coords, element: el });
+      this.addGlobeMarker(this._codeMarker(contributor.properties), contributor.geometry.coordinates, CODE_LAYER);
     });
-    
-    this.globeMap.on('move', () => this.updateMarkerVisibility());
-    this.globeMap.on('moveend', () => this.updateMarkerVisibility());
-    this.globeMap.on('click', (e) => {
-      const features = this.globeMap.queryRenderedFeatures(e.point);
-      if (features.length === 0) this.closePopup();
+  }
+
+  onFlatLoad() {
+    // Add supporting first so code contributors render on top
+    this._supportingWithValidCoords().forEach(({ contributor, coords }) => {
+      this.addFlatMarker(this._supportingMarker(contributor.properties), coords, SUPPORTING_LAYER, 1);
     });
-    
-    this.updateMarkerVisibility();
+    this._contributorsWithLocation().forEach((contributor) => {
+      this.addFlatMarker(this._codeMarker(contributor.properties), contributor.geometry.coordinates, CODE_LAYER, 2);
+    });
+  }
+
+  // ─── Code Contributors ──────────────────────────────────────────────────────
+
+  _contributorsWithLocation() {
+    return this.contributorsData.features
+      .filter(f => f.geometry && f.geometry.coordinates);
+  }
+
+  _codeMarker(props) {
+    const isHonorary = props.is_honorary || false;
+    const honoraryIcon = props.honorary_icon || '';
+
+    let badge = null;
+    if (isHonorary && honoraryIcon) {
+      badge = document.createElement('div');
+      badge.style.position = 'absolute';
+      badge.style.top = '-4px';
+      badge.style.left = '-4px';
+      badge.style.fontSize = '1rem';
+      badge.style.filter = 'drop-shadow(1px 1px 2px rgba(0,0,0,0.3))';
+      badge.style.zIndex = '10';
+      badge.textContent = honoraryIcon;
+    }
+
+    const { el } = this.createImageMarker({
+      src: props.avatar_url || '/img/default-avatar.png',
+      size: this.getMarkerSize(props.total_contributions) * 3,
+      border: isHonorary ? '3px solid #ee7913' : '2px solid #589632',
+      glow: isHonorary ? '0 0 15px rgba(238,121,19,0.8)' : '0 0 10px rgba(88,150,50,0.8)',
+      hoverGlow: isHonorary ? '0 0 20px rgba(238,121,19,0.9)' : '0 0 15px rgba(88,150,50,0.9)',
+      badge
+    });
+    this.onMarkerActivate(el, (e) => this.showContributorPopup(props, e));
+    return el;
   }
 
   // ─── Supporting Contributors ─────────────────────────────────────────────────
 
-  _createSupportingMarkerElement(props, size) {
+  _supportingWithValidCoords() {
+    const valid = [];
+    this.supportingData.features
+      .filter(f => f.geometry && f.geometry.coordinates)
+      .forEach((contributor) => {
+        let coords = [...contributor.geometry.coordinates];
+        // Auto-fix swapped [lat, lng] → [lng, lat] (GeoJSON requires [lng, lat])
+        if (coords[1] > 90 || coords[1] < -90) {
+          console.warn(`Auto-fixing swapped coordinates for "${contributor.properties.name}": [${coords[0]}, ${coords[1]}] → [${coords[1]}, ${coords[0]}]`);
+          coords = [coords[1], coords[0]];
+        }
+        if (coords[1] > 90 || coords[1] < -90 || coords[0] > 180 || coords[0] < -180) {
+          console.warn(`Skipping "${contributor.properties.name}": invalid coordinates [${coords[0]}, ${coords[1]}]`);
+          return;
+        }
+        valid.push({ contributor, coords });
+      });
+    return valid;
+  }
+
+  _supportingMarker(props) {
     const isOrg = props.is_organization || false;
-    const avatarUrl = props.avatar_img || '/img/default-avatar.png';
-
-    const el = document.createElement('div');
-    el.className = 'maplibre-marker supporting-globe-marker';
-    el.style.width = `${size}px`;
-    el.style.height = `${size}px`;
-    el.style.cursor = 'pointer';
-    el.style.transition = 'opacity 0.3s ease';
-
-    const wrapper = document.createElement('div');
-    wrapper.style.position = 'relative';
-    wrapper.style.width = '100%';
-    wrapper.style.height = '100%';
-
-    const img = document.createElement('img');
-    img.src = avatarUrl;
-    img.style.width = '100%';
-    img.style.height = '100%';
-    img.style.borderRadius = isOrg ? '10%' : '50%';
-    img.style.border = '2px solid #f39c12';
-    img.style.boxShadow = '0 0 10px rgba(243,156,18,0.7)';
-    img.style.objectFit = 'cover';
-    img.style.background = 'white';
-    img.style.display = 'block';
-    img.style.transition = 'transform 0.3s ease, box-shadow 0.3s ease';
-    wrapper.appendChild(img);
 
     // "S" badge — top-right corner
     const badge = document.createElement('div');
     badge.className = 'supporting-s-badge-marker';
     badge.textContent = 'S';
-    wrapper.appendChild(badge);
 
-    el.appendChild(wrapper);
-
-    el.addEventListener('mouseenter', () => {
-      img.style.transform = 'scale(1.15)';
-      img.style.boxShadow = '0 0 18px rgba(243,156,18,0.9)';
+    const { el } = this.createImageMarker({
+      src: props.avatar_img || '/img/default-avatar.png',
+      size: 36,
+      shape: isOrg ? 'rounded' : 'circle',
+      className: 'supporting-globe-marker',
+      border: '2px solid #f39c12',
+      glow: '0 0 10px rgba(243,156,18,0.7)',
+      hoverGlow: '0 0 18px rgba(243,156,18,0.9)',
+      badge
     });
-    el.addEventListener('mouseleave', () => {
-      img.style.transform = 'scale(1)';
-      img.style.boxShadow = '0 0 10px rgba(243,156,18,0.7)';
-    });
-
-    return { el, img };
+    this.onMarkerActivate(el, (e) => this.showSupportingContributorPopup(props, e));
+    return el;
   }
 
-  addSupportingContributorsToMapLibre() {
-    const features = this.supportingData.features
-      .filter(f => f.geometry && f.geometry.coordinates);
-
-    features.forEach((contributor) => {
-      let coords = [...contributor.geometry.coordinates];
-      // Auto-fix swapped [lat, lng] → [lng, lat] (GeoJSON requires [lng, lat])
-      if (coords[1] > 90 || coords[1] < -90) {
-        console.warn(`Auto-fixing swapped coordinates for "${contributor.properties.name}": [${coords[0]}, ${coords[1]}] → [${coords[1]}, ${coords[0]}]`);
-        coords = [coords[1], coords[0]];
-      }
-      if (coords[1] > 90 || coords[1] < -90 || coords[0] > 180 || coords[0] < -180) {
-        console.warn(`Skipping "${contributor.properties.name}": invalid coordinates [${coords[0]}, ${coords[1]}]`);
-        return;
-      }
-      const { el } = this._createSupportingMarkerElement(contributor.properties, 36);
-
-      el.addEventListener('click', (e) => {
-        e.stopPropagation();
-        this.showSupportingContributorPopup(contributor.properties, e);
-      });
-
-      const marker = new maplibregl.Marker({ element: el, anchor: 'center' })
-        .setLngLat(coords)
-        .addTo(this.globeMap);
-
-      this.supportingMarkers.push({ marker, coords, element: el });
-    });
-  }
-
-  addSupportingContributorsToOpenLayers() {
-    const features = this.supportingData.features
-      .filter(f => f.geometry && f.geometry.coordinates);
-
-    features.forEach((contributor) => {
-      let coords = [...contributor.geometry.coordinates];
-      // Auto-fix swapped [lat, lng] → [lng, lat] (GeoJSON requires [lng, lat])
-      if (coords[1] > 90 || coords[1] < -90) {
-        console.warn(`Auto-fixing swapped coordinates for "${contributor.properties.name}": [${coords[0]}, ${coords[1]}] → [${coords[1]}, ${coords[0]}]`);
-        coords = [coords[1], coords[0]];
-      }
-      if (coords[1] > 90 || coords[1] < -90 || coords[0] > 180 || coords[0] < -180) {
-        console.warn(`Skipping "${contributor.properties.name}": invalid coordinates [${coords[0]}, ${coords[1]}]`);
-        return;
-      }
-      const { el } = this._createSupportingMarkerElement(contributor.properties, 36);
-
-      el.addEventListener('click', (e) => {
-        e.stopPropagation();
-        this.showSupportingContributorPopup(contributor.properties, e);
-      });
-
-      const overlay = new ol.Overlay({
-        position: ol.proj.fromLonLat(coords),
-        positioning: 'center-center',
-        element: el,
-        stopEvent: false
-      });
-
-      this.flatMap.addOverlay(overlay);
-      // Set z-index on the OL wrapper so supporting stays below code contributors
-      const supportingWrapper = overlay.getElement()?.parentElement;
-      if (supportingWrapper) supportingWrapper.style.zIndex = '1';
-      this.supportingFlatMarkers.push({ overlay, element: el });
-    });
-  }
-  
-  // ─── Marker Visibility ───────────────────────────────────────────────────────
-
-  _isOnVisibleHemisphere(coords) {
-    const center = this.globeMap.getCenter();
-    const [lng, lat] = coords;
-    const centerLng = center.lng;
-    const centerLat = center.lat;
-
-    let normalizedDLng = lng - centerLng;
-    while (normalizedDLng > 180) normalizedDLng -= 360;
-    while (normalizedDLng < -180) normalizedDLng += 360;
-
-    const lat1Rad = centerLat * Math.PI / 180;
-    const lat2Rad = lat * Math.PI / 180;
-    const dLat = lat - centerLat;
-    const dLngRad = normalizedDLng * Math.PI / 180;
-
-    const a = Math.sin(dLat * Math.PI / 360) ** 2 +
-              Math.cos(lat1Rad) * Math.cos(lat2Rad) *
-              Math.sin(dLngRad / 2) ** 2;
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const distance = c * 180 / Math.PI;
-    return distance <= 85;
-  }
-
-  updateMarkerVisibility() {
-    if (!this.globeMap) return;
-
-    this.markers.forEach(({ coords, element }) => {
-      const visible = this.showCodeContributors && this._isOnVisibleHemisphere(coords);
-      element.style.opacity = visible ? '1' : '0';
-      element.style.pointerEvents = visible ? 'auto' : 'none';
-      element.style.visibility = visible ? 'visible' : 'hidden';
-    });
-
-    this.supportingMarkers.forEach(({ coords, element }) => {
-      const visible = this.showSupportingContributors && this._isOnVisibleHemisphere(coords);
-      element.style.opacity = visible ? '1' : '0';
-      element.style.pointerEvents = visible ? 'auto' : 'none';
-      element.style.visibility = visible ? 'visible' : 'hidden';
-    });
-  }
-
-  updateAllMarkersVisibility() {
-    if (this.currentView === 'globe') {
-      this.updateMarkerVisibility();
-    } else {
-      this.flatMarkers.forEach(({ element }) => {
-        element.style.display = this.showCodeContributors ? 'block' : 'none';
-      });
-      this.supportingFlatMarkers.forEach(({ element }) => {
-        element.style.display = this.showSupportingContributors ? 'block' : 'none';
-      });
-    }
-  }
-  
-  // ─── Flat Map ────────────────────────────────────────────────────────────────
-
-  initFlatMap() {
-    const extent = ol.proj.transformExtent([-180, -85, 180, 85], 'EPSG:4326', 'EPSG:3857');
-    
-    const view = new ol.View({
-      center: ol.proj.fromLonLat([0, 20]),
-      zoom: 2,
-      extent: extent,
-      constrainOnlyCenter: false
-    });
-    
-    this.flatMap = new ol.Map({
-      target: 'flat-map-view',
-      layers: [new ol.layer.Tile({ source: new ol.source.OSM() })],
-      view: view
-    });
-    
-    this.flatMap.on('click', (evt) => {
-      let clickedOnOverlay = false;
-      this.flatMap.getOverlays().forEach(overlay => {
-        const element = overlay.getElement();
-        if (element && element.contains(evt.originalEvent.target)) {
-          clickedOnOverlay = true;
-        }
-      });
-      if (!clickedOnOverlay) this.closePopup();
-    });
-    
-    // Add supporting first so code contributors render on top
-    this.addSupportingContributorsToOpenLayers();
-    this.addContributorsToOpenLayers();
-    // Apply current filter state to freshly-added markers
-    this.updateAllMarkersVisibility();
-    this._restorePopup();
-  }
-  
-  addContributorsToOpenLayers() {
-    const contributorsWithLocation = this.contributorsData.features
-      .filter(f => f.geometry && f.geometry.coordinates);
-    
-    contributorsWithLocation.forEach((contributor) => {
-      const coords = contributor.geometry.coordinates;
-      const size = this.getMarkerSize(contributor.properties.total_contributions) * 3;
-      const avatarUrl = contributor.properties.avatar_url || '/img/default-avatar.png';
-      const isHonorary = contributor.properties.is_honorary || false;
-      const honoraryIcon = contributor.properties.honorary_icon || '';
-      
-      const el = document.createElement('div');
-      el.className = 'ol-marker';
-      el.style.width = `${size}px`;
-      el.style.height = `${size}px`;
-      el.style.cursor = 'pointer';
-      
-      const img = document.createElement('img');
-      img.src = avatarUrl;
-      img.style.width = '100%';
-      img.style.height = '100%';
-      img.style.borderRadius = '50%';
-      img.style.border = isHonorary ? '3px solid #ee7913' : '2px solid #589632';
-      img.style.boxShadow = isHonorary ? '0 0 15px rgba(238,121,19,0.8)' : '0 0 10px rgba(88,150,50,0.8)';
-      img.style.objectFit = 'cover';
-      img.style.background = 'white';
-      img.style.display = 'block';
-      img.style.transition = 'transform 0.3s ease, box-shadow 0.3s ease';
-      el.appendChild(img);
-      
-      if (isHonorary && honoraryIcon) {
-        const badge = document.createElement('div');
-        badge.style.position = 'absolute';
-        badge.style.top = '-4px';
-        badge.style.left = '-4px';
-        badge.style.fontSize = '1rem';
-        badge.style.filter = 'drop-shadow(1px 1px 2px rgba(0,0,0,0.3))';
-        badge.style.zIndex = '10';
-        badge.textContent = honoraryIcon;
-        el.appendChild(badge);
-      }
-      
-      el.addEventListener('mouseenter', () => {
-        img.style.transform = 'scale(1.15)';
-        img.style.boxShadow = isHonorary ? '0 0 20px rgba(238,121,19,0.9)' : '0 0 15px rgba(88,150,50,0.9)';
-      });
-      el.addEventListener('mouseleave', () => {
-        img.style.transform = 'scale(1)';
-        img.style.boxShadow = isHonorary ? '0 0 15px rgba(238,121,19,0.8)' : '0 0 10px rgba(88,150,50,0.8)';
-      });
-      el.addEventListener('click', (e) => {
-        e.stopPropagation();
-        this.showContributorPopup(contributor.properties, e);
-      });
-      
-      const overlay = new ol.Overlay({
-        position: ol.proj.fromLonLat(coords),
-        positioning: 'center-center',
-        element: el,
-        stopEvent: false
-      });
-      
-      this.flatMap.addOverlay(overlay);
-      // Set z-index on the OL wrapper so code contributors stay above supporting
-      const codeWrapper = overlay.getElement()?.parentElement;
-      if (codeWrapper) codeWrapper.style.zIndex = '2';
-      this.flatMarkers.push({ overlay, element: el });
-    });
-  }
-  
   // ─── Size helper ─────────────────────────────────────────────────────────────
 
   getMarkerSize(contributions) {
@@ -543,7 +162,7 @@ class ContributorsMap {
     if (contributions > 500) return 14;
     return 12;
   }
-  
+
   // ─── Popups ──────────────────────────────────────────────────────────────────
 
   showContributorPopup(contributor, event) {
@@ -620,13 +239,9 @@ class ContributorsMap {
       thematicsList.appendChild(badge);
     });
     
-    // Hide supporting popup, show code popup
-    document.getElementById('supporting-contributor-popup')?.classList.remove('active');
     this.activeContributorId = contributor.login;
     this.activeSupportingId = null;
-    this.updateUrlState();
-    popup.classList.add('active');
-    document.getElementById('popup-overlay')?.classList.add('active');
+    this.openPopup('contributor-popup');
   }
 
   showSupportingContributorPopup(props, event) {
@@ -693,37 +308,19 @@ class ContributorsMap {
       rolesEl.appendChild(badge);
     });
 
-    // Hide code popup, show supporting popup
-    document.getElementById('contributor-popup')?.classList.remove('active');
     this.activeSupportingId = props.name;
     this.activeContributorId = null;
-    this.updateUrlState();
-    popup.classList.add('active');
-    document.getElementById('popup-overlay')?.classList.add('active');
+    this.openPopup('supporting-contributor-popup');
   }
   
-  closePopup() {
-    document.getElementById('contributor-popup')?.classList.remove('active');
-    document.getElementById('supporting-contributor-popup')?.classList.remove('active');
-    document.getElementById('popup-overlay')?.classList.remove('active');
+  clearActivePopup() {
     this.activeContributorId = null;
     this.activeSupportingId = null;
-    this.updateUrlState();
   }
-  
+
   // ─── URL State ───────────────────────────────────────────────────────────────
 
-  readUrlState() {
-    const params = new URLSearchParams(window.location.search);
-
-    const view = params.get('view');
-    if (view === 'flat' || view === 'globe') {
-      this.currentView = view;
-      // Sync button active states immediately
-      document.getElementById('globe-view-btn')?.classList.toggle('active', view === 'globe');
-      document.getElementById('flat-view-btn')?.classList.toggle('active', view === 'flat');
-    }
-
+  readExtraUrlState(params) {
     if (params.has('showCode')) {
       this.showCodeContributors = params.get('showCode') !== 'false';
       const cb = document.getElementById('filter-code');
@@ -740,11 +337,7 @@ class ContributorsMap {
     this.activeSupportingId = params.get('supportingContributor') || null;
   }
 
-  updateUrlState() {
-    const params = new URLSearchParams(window.location.search);
-
-    params.set('view', this.currentView);
-
+  writeExtraUrlState(params) {
     if (!this.showCodeContributors) {
       params.set('showCode', 'false');
     } else {
@@ -767,12 +360,9 @@ class ContributorsMap {
       params.delete('contributor');
       params.delete('supportingContributor');
     }
-
-    const newUrl = `${window.location.pathname}?${params.toString()}${window.location.hash}`;
-    history.replaceState(null, '', newUrl);
   }
 
-  _restorePopup() {
+  restorePopup() {
     if (this.activeContributorId) {
       const feature = this.contributorsData.features.find(
         f => f.properties.login === this.activeContributorId
@@ -785,62 +375,11 @@ class ContributorsMap {
       if (feature) this.showSupportingContributorPopup(feature.properties, null);
     }
   }
-
-  // ─── Rotation ────────────────────────────────────────────────────────────────
-
-  startRotation() {
-    if (this.isRotating || !this.globeMap) return;
-    
-    this.isRotating = true;
-    const secondsPerRevolution = 30;
-    const maxSpinZoom = 5;
-    const slowSpinZoom = 3;
-    
-    const rotateCamera = (timestamp) => {
-      if (!this.isRotating) return;
-      
-      const zoom = this.globeMap.getZoom();
-      if (zoom < maxSpinZoom) {
-        let distancePerSecond = 360 / secondsPerRevolution;
-        if (zoom > slowSpinZoom) {
-          const zoomDif = (maxSpinZoom - zoom) / (maxSpinZoom - slowSpinZoom);
-          distancePerSecond *= zoomDif;
-        }
-        const center = this.globeMap.getCenter();
-        center.lng -= distancePerSecond / 60;
-        this.globeMap.easeTo({ center, duration: 1000 / 60, easing: (t) => t });
-      }
-      
-      this.rotationAnimation = requestAnimationFrame(rotateCamera);
-    };
-    
-    this.rotationAnimation = requestAnimationFrame(rotateCamera);
-  }
-  
-  stopRotation() {
-    this.isRotating = false;
-    if (this.rotationAnimation) {
-      cancelAnimationFrame(this.rotationAnimation);
-      this.rotationAnimation = null;
-    }
-  }
 }
 
 // ─── Bootstrap ────────────────────────────────────────────────────────────────
 
 function initContributorsMap() {
-  if (typeof maplibregl === 'undefined') {
-    console.error('MapLibre GL not loaded yet, retrying...');
-    setTimeout(initContributorsMap, 100);
-    return;
-  }
-  
-  if (typeof ol === 'undefined') {
-    console.error('OpenLayers not loaded yet, retrying...');
-    setTimeout(initContributorsMap, 100);
-    return;
-  }
-  
   const spinner = document.querySelector('.loading-spinner');
 
   Promise.all([
@@ -874,9 +413,4 @@ function initContributorsMap() {
     });
 }
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initContributorsMap);
-} else {
-  initContributorsMap();
-}
-
+whenMapLibsReady(initContributorsMap);
