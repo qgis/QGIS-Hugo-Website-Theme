@@ -37,10 +37,10 @@
 
   <!-- Map Controls -->
   <div class="map-controls" role="group" aria-label="{{ i18n "userGroupsMapDisplay" | default "Map display" }}">
-    <button id="globe-view-btn" class="map-view-toggle active" title="{{ $globeLabel }}" aria-label="{{ $globeLabel }}" aria-pressed="true">
+    <button id="globe-view-btn" class="map-view-toggle" title="{{ $globeLabel }}" aria-label="{{ $globeLabel }}" aria-pressed="false">
       <i class="fas fa-globe" aria-hidden="true"></i>
     </button>
-    <button id="flat-view-btn" class="map-view-toggle" title="{{ $flatLabel }}" aria-label="{{ $flatLabel }}" aria-pressed="false">
+    <button id="flat-view-btn" class="map-view-toggle active" title="{{ $flatLabel }}" aria-label="{{ $flatLabel }}" aria-pressed="true">
       <i class="fas fa-map" aria-hidden="true"></i>
     </button>
   </div>

@@ -8,6 +8,9 @@
 // between them, globe rotation, hiding markers on the far side of the globe,
 // popup open/close plumbing and the `view` URL parameter.
 //
+// The flat map is the default view. The globe is only built the first time
+// the reader switches to it, or when the URL asks for it (?view=globe).
+//
 // Subclasses set their own state, then call `this.init()`, and implement:
 //   onGlobeLoad()                 add sources, layers and markers to this.globeMap
 //   onFlatLoad()                  add layers and overlays to this.flatMap
@@ -83,7 +86,7 @@ class GlobeFlatMap {
     this.flatZoom = options.flatZoom || 2;
     this.popupIds = options.popupIds || [];
 
-    this.currentView = 'globe';
+    this.currentView = 'flat';
     this.globeMap = null;
     this.flatMap = null;
     this.isRotating = false;
@@ -96,7 +99,7 @@ class GlobeFlatMap {
   init() {
     this.readUrlState();
     this.setupEventListeners();
-    this.initGlobeView();
+    this._showView(this.currentView);
   }
 
   // ─── Hooks (overridden by subclasses) ───────────────────────────────────────
@@ -138,7 +141,11 @@ class GlobeFlatMap {
   switchView(view) {
     this.currentView = view;
     this.updateUrlState();
+    this._showView(view);
+  }
 
+  // Show one view, building its map the first time it is needed.
+  _showView(view) {
     const globeView = document.getElementById('globe-view');
     const flatView = document.getElementById('flat-map-view');
     const globeBtn = document.getElementById('globe-view-btn');
@@ -230,9 +237,8 @@ class GlobeFlatMap {
       });
       this.updateMarkerVisibility();
 
-      if (this.currentView === 'flat') {
-        this.switchView('flat');
-      } else {
+      // The reader may have switched back to the flat map while the globe loaded
+      if (this.currentView === 'globe') {
         this.restorePopup();
         setTimeout(() => this.startRotation(), 500);
       }
