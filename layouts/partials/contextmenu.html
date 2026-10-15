@@ -5,9 +5,7 @@
             {{ with $data }}
             <a href="{{ .url | safeURL }}" target="_blank" rel="noopener" class="external-link">
             {{ .title }}
-            </a>    
-            {{ else }}
-                <span class="is-italic" style="font-size: 14px;">Latest news will appear here soon.</span>
+            </a>
             {{ end }}
         </div>
         <div class="is-flex is-gap-3 is-align-items-center">
