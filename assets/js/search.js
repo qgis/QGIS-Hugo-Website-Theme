@@ -8,7 +8,7 @@ var fuseKeys = [
     {name: "title", weight: 0.5},
     {name: "page", weight: 0.2},
     {name: "contents", weight: 0.25},
-    {name: "tags", weight: 0.05}
+    {name: "tags.name", weight: 0.05}
 ];
 
 var fuseOptions = {
@@ -146,19 +146,20 @@ function populateResults(results) {
     results.forEach(function (value, key) {
         var snippet = createSnippet(value.item.contents, searchQuery, searchTokens);
 
-        // Replace values for tags
+        // Tag and category chips. The index carries the term URL resolved by
+        // Hugo, because a site can move its taxonomies with the permalinks
+        // config and the old guess at /tags/<name> then 404s.
         var tags = "";
         if (value.item.tags) {
-            value.item.tags.forEach(function (element) {
-                tags += "<span class='tag is-warning'><a href='/tags/" + element + "'>" + element + "</a></span> ";
+            value.item.tags.forEach(function (term) {
+                tags += "<span class='tag'><a href='" + term.url + "' class='has-text-primary3'>" + term.name + "</a></span> ";
             });
         }
-        
-        // Replace values for categories
+
         var categories = "";
         if (value.item.categories) {
-            value.item.categories.forEach(function (element) {
-                categories += "<span class='tag is-danger'><a href='/categories/" + element + "'>" + element + "</a></span> ";
+            value.item.categories.forEach(function (term) {
+                categories += "<span class='tag'><a href='" + term.url + "'>" + term.name + "</a></span> ";
             });
         }
 

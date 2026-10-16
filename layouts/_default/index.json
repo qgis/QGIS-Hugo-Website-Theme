@@ -42,11 +42,29 @@
             {{- if $anchor -}}
                 {{- $permalink = printf "%s#%s" $page.Permalink $anchor -}}
             {{- end -}}
+            {{/* Resolve each term to its real URL. A site can move its
+                 taxonomies with the permalinks config (the blog publishes
+                 categories under /category/:slug/), so the term page is the
+                 only thing that knows where a term actually lives. Terms with
+                 no page of their own are dropped: a chip that 404s is worse
+                 than no chip. */}}
+            {{- $tagLinks := slice -}}
+            {{- range $page.Params.tags -}}
+                {{- with site.GetPage (printf "/tags/%s" (urlize .)) -}}
+                    {{- $tagLinks = $tagLinks | append (dict "name" .Title "url" .RelPermalink) -}}
+                {{- end -}}
+            {{- end -}}
+            {{- $categoryLinks := slice -}}
+            {{- range $page.Params.categories -}}
+                {{- with site.GetPage (printf "/categories/%s" (urlize .)) -}}
+                    {{- $categoryLinks = $categoryLinks | append (dict "name" .Title "url" .RelPermalink) -}}
+                {{- end -}}
+            {{- end -}}
             {{- $index = $index | append (dict
                 "title" $title
                 "page" $page.Title
-                "tags" $page.Params.tags
-                "categories" $page.Params.categories
+                "tags" $tagLinks
+                "categories" $categoryLinks
                 "contents" $body
                 "permalink" $permalink) -}}
         {{- end -}}
