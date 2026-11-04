@@ -3,16 +3,30 @@
         <div class="columns is-vcentered main-cols">
             <div class="column is-5 main-text">
                 <h2 class="deco-arrow">
-                    {{ .Get "title" }}
+                    {{ if .Get "link" }}
+                    <a href="{{ .Get "link" }}">
+                        {{ .Get "title" }}
+                    </a>
+                    {{ else }}
+                        {{ .Get "title" }}
+                    {{ end }}
                 </h2>
                 <p class="is-size-5 has-text-weight-light">
                     {{ .Get "text" }}
                 </p>
             </div>
             <div class="column is-7 main-image">
+                {{ if .Get "link" }}
+                <a href="{{ .Get "link" }}">
+                    <figure class="deco-block-{{ .Get "order" }}">
+                        <img src={{ .Get "img" | absURL }} />
+                    </figure>
+                </a>
+                {{ else }}
                 <figure class="deco-block-{{ .Get "order" }}">
                     <img src={{ .Get "img" | absURL }} />
                 </figure>
+                {{ end }}
             </div>
         </div>
         <div class="columns add-text alpha70">
