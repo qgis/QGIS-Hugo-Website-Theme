@@ -157,13 +157,12 @@
         {{ $qrcreatejs := resources.Get "js/qrcreate.js" }}
         {{ $fusejs := resources.Get "js/fuse.js" }}
         {{ $markjs := resources.Get "js/mark.min.js" }}
-        <!-- {{ $matomojs := resources.Get "js/matomo.js" }} -->
+        {{ $matomojs := resources.Get "js/matomo.js" }}
         {{ $langredir := resources.Get "js/lang-redirect.js" | resources.ExecuteAsTemplate "lang-redirect.js" . | resources.Minify | resources.Fingerprint }}
         {{ $langswitcher := resources.Get "js/language-switcher.js" | resources.Minify | resources.Fingerprint }}
         {{ $searchmodaljs := resources.Get "js/search-modal.js" }}
         {{/* See https://www.youtube.com/watch?v=T33NN_pPeNI */}}
-        <!-- {{ $jsAssets := slice $animatejs $expandjs $navbarjs $qrcreatejs $fusejs $markjs $matomojs $langredir $searchmodaljs }} -->
-        {{ $jsAssets := slice $animatejs $expandjs $navbarjs $qrcreatejs $fusejs $markjs $langredir $searchmodaljs }}
+        {{ $jsAssets := slice $animatejs $expandjs $navbarjs $qrcreatejs $fusejs $markjs $matomojs $langredir $searchmodaljs }}
         {{ if (eq .Site.Params.cookiesstate true) }}
             {{ $jsAssets = $jsAssets | append (resources.Get "js/cookie.js") }}
         {{ end }}
