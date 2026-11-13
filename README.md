@@ -421,6 +421,28 @@ The page will be accessible then at /about/
 Place images and media in ```stati./README-images```. Everything in ```static``` is referenced
 from the top level of the site e.g.  ```stati./README-images/foo.png``` would be referenced in
 markdown as ``./README-images/foo.png```.
+
+## 🔗 Linking list cards to another site
+
+A section page lists its pages as cards. Each card's "Read more" button opens that page on this site.
+To send readers to another site instead, set `externalLink` in the page's front matter:
+
+```yaml
+title: "QGIS Grant Programme 2026 Results"
+externalLink: "https://blog.qgis.org/2026/05/17/qgis-grant-programme-2026-results/"
+```
+
+The button then opens that address. Pages without `externalLink` keep linking to their own page.
+
+If the page has nothing else to show, you can also skip building it.
+Hugo then lists the page as a card but writes no page for it:
+
+```yaml
+build:
+  render: link
+  list: local
+```
+
 ## 🌶️ Working with menus
 
 There are two menus, the primary (1) menu which appears at the top of the page, and the secondary menu (2) which may appear beneath it depending on context.
