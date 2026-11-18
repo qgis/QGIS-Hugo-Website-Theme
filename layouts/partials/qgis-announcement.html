@@ -27,17 +27,14 @@
                         {{ end }}
                     </div>
                     <div class="qgis-announcement-members is-flex is-flex-direction-column is-justify-content-space-between">
-                        <p>
-                            {{ i18n "supportedByOur" }}
-                            <a class="has-text-weight-bold" href="{{ relLangURL "funding/membership/members/" }}">{{ i18n "sustainingMembers" }}</a>
-                        </p>
                         {{ with $flagship }}
+                            <p class="has-text-weight-bold">{{ i18n "flagshipMembersThanks" }}</p>
                             <div class="qgis-announcement-logos supporters-grid is-flex is-flex-wrap-wrap">
                                 {{ range . }}
                                     <a class="large-supporter fund-Flagship is-flex is-align-items-center" href="{{ .Params.link }}">
                                         <img
                                             class="grayscale"
-                                            src="{{ site.BaseURL }}funders/{{ .Params.logo }}"
+                                            src="{{ printf "funders/%s" .Params.logo | relURL }}"
                                             alt="{{ .Params.title }}"
                                             loading="lazy"
                                             {{ with $funders.Resources.GetMatch .Params.logo }}
@@ -47,11 +44,15 @@
                                                 {{ end }}
                                             {{ end }}
                                         />
-                                        <span class="partner-title">{{ i18n "flagship" }}</span>
                                     </a>
                                 {{ end }}
                             </div>
+                            {{ $trimLogos := resources.Get "js/trim-logos.js" | resources.Minify | resources.Fingerprint }}
+                            <script defer src="{{ $trimLogos.RelPermalink }}"></script>
                         {{ end }}
+                        <p>
+                            <a href="{{ relLangURL "funding/membership/members/" }}">{{ i18n "seeAllSustainingMembers" }}</a>
+                        </p>
                     </div>
                 </div>
             </div>
