@@ -1,9 +1,43 @@
-{{ range (where .Site.Pages "Section" "project") }}
-  {{ range sort (where .Pages "Type" "visual-changelog") ".Params.releasedate" "desc" }}
-    <p>
-      <a href="{{ .RelPermalink }}">
-        {{ .Title }} <span style="color: #888; font-weight:300">{{ .Params.releasedate }}</span>
-      </a>
+{{- $changelogs := sort (where site.RegularPages "Type" "visual-changelog") ".Params.releasedate" "desc" }}
+{{- range $i, $page := $changelogs }}
+  {{- $version := $page.Title }}
+  {{- with findRE `QGIS \d+(?:\.\d+)+` $page.Title 1 }}{{ $version = index . 0 }}{{ end }}
+
+  {{- $thumb := false }}
+  {{- with findRESubmatch `(?m)^# .*\n\s*(?:!\[[^\]]*\]\(|<img\s+src=")(images/[^")\s]+)` $page.RawContent 1 }}
+    {{- with $page.Resources.GetMatch (index (index . 0) 1) }}
+      {{- $thumb = .Resize "800x webp" }}
+    {{- end }}
+  {{- end }}
+
+  {{- $excerpt := "" }}
+  {{- range findRE `(?s)<p>.*?</p>` $page.Content 10 }}
+    {{- $text := . | plainify | htmlUnescape | strings.TrimSpace }}
+    {{- if ge (len $text) 80 }}{{ $excerpt = $text }}{{ break }}{{ end }}
+  {{- end }}
+<div class="container rich rounded mt-5{{ if $thumb }} has-right{{ end }}">
+  <div class="cont coloring-1">
+    <h3>{{ $version }}</h3>
+    {{- with $page.Params.releasedate }}
+    <p class="is-size-6 is-italic has-text-weight-medium">
+      <span class="icon"><i class="fas fa-calendar-alt" aria-hidden="true"></i></span>
+      <time datetime="{{ . }}">{{ time.Format ":date_long" . }}</time>
     </p>
-  {{ end }}
-{{ end }}
+    {{- end }}
+    {{- with $excerpt }}
+    <p>{{ truncate 200 . }}</p>
+    {{- end }}
+    <a class="button is-primary1 mt-3" href="{{ $page.RelPermalink }}">
+      <span class="icon"><i class="fas fa-info-circle" aria-hidden="true"></i></span>
+      <span>{{ i18n "readMore" }}</span>
+    </a>
+  </div>
+  {{- with $thumb }}
+  <div class="rich-right is-align-self-center">
+    <figure class="image m-0">
+      <img src="{{ .RelPermalink }}" width="{{ .Width }}" height="{{ .Height }}" alt=""{{ if gt $i 0 }} loading="lazy"{{ end }}>
+    </figure>
+  </div>
+  {{- end }}
+</div>
+{{- end }}
