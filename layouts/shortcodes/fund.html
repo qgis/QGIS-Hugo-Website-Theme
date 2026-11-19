@@ -2,6 +2,7 @@
 {{ $logoPath := 0 }}
 
 {{ $type := .Get "type"  }}
+{{ $level := lower (.Get "level" | default "") }}
 
 {{ if eq $type "changelog" }}
 	{{ $allFunders = .Page.Resources.Match "funders/*md" }}
@@ -18,6 +19,7 @@
 
 {{ if or (eq $type "active") (eq $type "changelog") }}
 
+    {{ if in (slice "" "flagship") $level }}
     {{ $funders := slice }}
     {{ range where $allFunders "Params.level" "Flagship" }}
         {{ if or (eq $type "changelog") (ge (time .Params.endDate) now) }}
@@ -37,6 +39,7 @@
                 {{ $.Scratch.Set "counter" $count }}
                     {{ if eq ( mod $count 3 ) 1 }}
                         {{ if gt $count 1 }}
+        </div>
         <div class="tile">
                         {{ end }}
                     {{ end }}
@@ -57,6 +60,9 @@
         </div>
     {{ end }}
 
+    {{ end }}
+
+    {{ if in (slice "" "large") $level }}
     {{ $funders := slice }}
     {{ range where $allFunders "Params.level" "Large" }}
         {{ if or (eq $type "changelog") (ge (time .Params.endDate) now) }}
@@ -97,6 +103,9 @@
         </div>
     {{ end }}
 
+    {{ end }}
+
+    {{ if in (slice "" "medium") $level }}
     {{ $funders := slice }}
     {{ range where $allFunders "Params.level" "Medium" }}
         {{ if or (eq $type "changelog") (ge (time .Params.endDate) now) }}
@@ -138,6 +147,9 @@
         </div>        
     {{ end }}
 
+    {{ end }}
+
+    {{ if in (slice "" "small") $level }}
     {{ $funders := slice }}
     {{ range where $allFunders "Params.level" "Small" }}
         {{ if or (eq $type "changelog") (ge (time .Params.endDate) now) }}
@@ -177,6 +189,7 @@
             {{ end }}
             </div>
         </div>
+    {{ end }}
     {{ end }}
 
 {{ else }}
