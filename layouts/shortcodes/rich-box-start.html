@@ -1,4 +1,12 @@
-<div class="container rich {{ .Get "layoutClass" }}" {{ with .Get "id" }} id="{{ . }}" {{ end }}>
+<div class="container rich {{ .Get "layoutClass" }}{{ with .Get "githubLink" }} has-github-link{{ end }}" {{ with .Get "id" }} id="{{ . }}" {{ end }}>
     {{ with .Get "icon" }}
         <div class="icon">{{ . }}</div>
+    {{ end }}
+    {{ $githubLabel := i18n "richBoxGithubLink" | default "View on GitHub" }}
+    {{ with .Get "githubLink" }}
+        <a class="button is-primary3 is-outlined rich-github-link" href="{{ . }}" target="_blank" rel="noopener" aria-label="{{ $githubLabel }}" title="{{ $githubLabel }}">
+            <span class="icon is-small">
+                <i class="fab fa-github" aria-hidden="true"></i>
+            </span>
+        </a>
     {{ end }}

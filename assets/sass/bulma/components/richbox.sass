@@ -35,10 +35,24 @@
 		content: "" 
 		border-radius: 10px 
 
-.rich .cont 
-  .button 
+.rich .cont
+  .button
     margin-top: 0.25rem
     margin-bottom: 0.25rem
+
+.rich.has-github-link
+  .rich-github-link
+    position: absolute
+    top: 0.5rem
+    right: 0.5rem
+    z-index: 2
+  .cont > :first-child
+    padding-right: 2.5rem
+
+// has-right draws the box background over the left 75% only
++tablet
+  .has-right.has-github-link .rich-github-link
+    right: calc(25% + 0.5rem)
 
 .column 
   .column 
