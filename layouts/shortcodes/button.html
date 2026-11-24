@@ -3,12 +3,13 @@
 {{ $text := .Get "text" | default "" }}
 {{ $link := .Get "link" | default "" }}
 {{ $fullwidth := .Get "fullwidth" | default "false" }}
+{{ $disabled := .Get "disabled" | default "false" }}
 {{ $width := "" }}
 {{ if eq $fullwidth "true" }}
 {{ $width = "is-fullwidth" }}
 {{ end }}
 
-<a class="button {{ $class }} {{ $width }}" href="{{ absURL $link }}">
+<a class="button {{ $class }} {{ $width }}" href="{{ absURL $link }}" {{ if eq $disabled "true" }} disabled{{ end }}>
     {{- if ne $icon "" }}
     <span class="icon is-small">
     <i class="{{ $icon }}"></i>
